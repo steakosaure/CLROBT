@@ -13,6 +13,7 @@ import clrobots.interfaces.INidInfo
 import clrobots.interfaces.IFieldOfView
 import clrobots.interfaces.Iinteragir
 import clrobots.interfaces.Irun
+import clrobots.interfaces.IAction
 
 namespace clrobots{
 	
@@ -57,28 +58,21 @@ namespace clrobots{
 		}
 	}
 	
-	ecosystem EcoPercevoir{
-		provides create: ICreatePercevoir
-		species Percevoir{
-			provides perception : IPerception
-			requires envInfos : IEnvInfos
-		}
+	component Percevoir{
+		provides perception : IPerception
+		requires envInfos : IEnvInfos
 	}
 	
-	ecosystem EcoDecider{
-		provides create : ICreateDecider
-		species Decider{
-			provides decision : IDecision
-			requires perception : IPerception
-		}
+	component Decider{
+		provides decision : IDecision
+		requires perception : IPerception
 	}
 	
-	ecosystem EcoAgir{
-		species Agir{
-			requires decision : IDecision
-			provides action : IAction
-			requires interagir : Iinteragir
-		}
+	component Agir{
+		requires decision : IDecision
+		provides action : IAction
+		requires interagir : Iinteragir
 	}
+	
 	
 }

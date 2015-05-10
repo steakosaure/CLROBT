@@ -1,4 +1,4 @@
-package clrobots;
+package clrobots.interfaces;
 
 public interface IAction {
 
