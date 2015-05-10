@@ -1,0 +1,54 @@
+import clrobots.interfaces.ICreateBoite
+import clrobots.interfaces.ICreateDecider
+import clrobots.interfaces.ICreatePercevoir
+import clrobots.interfaces.ICreateRobot
+import clrobots.interfaces.IDecision
+import clrobots.interfaces.IEnvInfos
+import clrobots.interfaces.IPerception
+import clrobots.interfaces.IRobotInfo
+
+namespace clrobots{
+	
+	ecosystem EcoEnvironnement{
+		provides create: ICreateBoite
+		species Boite{
+			
+		}
+	}
+	
+	ecosystem EcoRobot{
+		provides create: ICreateRobot
+		
+		species Robot{
+			requires perception : IPerception
+			requires decision : IDecision
+			requires action : IAction
+			provides perceptionRobot : IPerception
+			provides decisionRobot : IDecision
+			provides infos : IRobotInfo 
+		}
+	}
+	
+	ecosystem EcoPercevoir{
+		provides create: ICreatePercevoir
+		species Percevoir{
+			provides perception: IPerception
+			requires envInfos : IEnvInfos
+		}
+	}
+	
+	ecosystem EcoDecider{
+		provides create: ICreateDecider
+		species Decider{
+			provides decision : IDecision
+			requires perception : IPerception
+		}
+	}
+	
+	ecosystem EcoAgir{
+		species Agir{
+			requires decision : IDecision
+			provides action : IAction
+		}
+	}
+}
