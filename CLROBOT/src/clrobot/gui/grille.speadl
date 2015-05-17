@@ -1,0 +1,26 @@
+import clrobot.interfaces.INidManage
+import clrobots.EcoNid
+import java.awt.Color
+
+namespace clrobots.gui {
+	
+    ecosystem Grille {
+    	provides manage: INidManage
+    	
+        part b: EcoNid {}
+
+		part gui: GrilleGUI {
+			bind manage to manage
+		}
+		
+        species GrilleNid(couleur: Color) {
+
+            use ba: b.Nid(couleur) {}
+            use ga: gui.NidGUI {
+                bind nidinfo to ba.nidinfo
+                bind creer to ba.creer
+               
+            }
+        }
+    }
+}

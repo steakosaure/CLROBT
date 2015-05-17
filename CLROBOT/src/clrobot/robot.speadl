@@ -1,0 +1,14 @@
+import clrobot.interfaces.ICreateNid
+import clrobot.interfaces.INidInfo
+import java.awt.Color
+
+namespace clrobots{
+	
+	ecosystem EcoNid{
+		species Nid(couleur: Color){
+			provides nidinfo : INidInfo
+			provides creer : ICreateNid
+			
+		}
+	}
+}

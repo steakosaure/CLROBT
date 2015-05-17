@@ -1,0 +1,14 @@
+import clrobot.interfaces.ICreateNid
+import clrobot.interfaces.INidInfo
+import clrobot.interfaces.INidManage
+
+namespace clrobots.gui {
+
+    ecosystem GrilleGUI {
+		requires manage: INidManage
+        species NidGUI {
+            requires nidinfo : INidInfo
+          	requires creer : ICreateNid
+        }
+    }
+}

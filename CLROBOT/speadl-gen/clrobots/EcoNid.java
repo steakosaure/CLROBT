@@ -1,7 +1,8 @@
 package clrobots;
 
-import clrobots.interfaces.ICreateNid;
-import clrobots.interfaces.INidInfo;
+import clrobot.interfaces.ICreateNid;
+import clrobot.interfaces.INidInfo;
+import java.awt.Color;
 
 @SuppressWarnings("all")
 public abstract class EcoNid {
@@ -12,11 +13,6 @@ public abstract class EcoNid {
   }
   
   public interface Provides {
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public ICreateNid create();
   }
   
   public interface Parts {
@@ -36,16 +32,8 @@ public abstract class EcoNid {
       
     }
     
-    private void init_create() {
-      assert this.create == null: "This is a bug.";
-      this.create = this.implementation.make_create();
-      if (this.create == null) {
-      	throw new RuntimeException("make_create() in clrobots.EcoNid should not return null.");
-      }
-    }
-    
     protected void initProvidedPorts() {
-      init_create();
+      
     }
     
     public ComponentImpl(final EcoNid implem, final EcoNid.Requires b, final boolean doInits) {
@@ -63,12 +51,6 @@ public abstract class EcoNid {
       	initProvidedPorts();
       }
     }
-    
-    private ICreateNid create;
-    
-    public ICreateNid create() {
-      return this.create;
-    }
   }
   
   public static abstract class Nid {
@@ -84,6 +66,12 @@ public abstract class EcoNid {
        * 
        */
       public INidInfo nidinfo();
+      
+      /**
+       * This can be called to access the provided port.
+       * 
+       */
+      public ICreateNid creer();
     }
     
     public interface Parts {
@@ -111,8 +99,17 @@ public abstract class EcoNid {
         }
       }
       
+      private void init_creer() {
+        assert this.creer == null: "This is a bug.";
+        this.creer = this.implementation.make_creer();
+        if (this.creer == null) {
+        	throw new RuntimeException("make_creer() in clrobots.EcoNid$Nid should not return null.");
+        }
+      }
+      
       protected void initProvidedPorts() {
         init_nidinfo();
+        init_creer();
       }
       
       public ComponentImpl(final EcoNid.Nid implem, final EcoNid.Nid.Requires b, final boolean doInits) {
@@ -135,6 +132,12 @@ public abstract class EcoNid {
       
       public INidInfo nidinfo() {
         return this.nidinfo;
+      }
+      
+      private ICreateNid creer;
+      
+      public ICreateNid creer() {
+        return this.creer;
       }
     }
     
@@ -183,6 +186,13 @@ public abstract class EcoNid {
      * 
      */
     protected abstract INidInfo make_nidinfo();
+    
+    /**
+     * This should be overridden by the implementation to define the provided port.
+     * This will be called once during the construction of the component to initialize the port.
+     * 
+     */
+    protected abstract ICreateNid make_creer();
     
     /**
      * This can be called by the implementation to access the required ports.
@@ -294,13 +304,6 @@ public abstract class EcoNid {
   }
   
   /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract ICreateNid make_create();
-  
-  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
@@ -344,14 +347,14 @@ public abstract class EcoNid {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoNid.Nid make_Nid();
+  protected abstract EcoNid.Nid make_Nid(final Color couleur);
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoNid.Nid _createImplementationOfNid() {
-    EcoNid.Nid implem = make_Nid();
+  public EcoNid.Nid _createImplementationOfNid(final Color couleur) {
+    EcoNid.Nid implem = make_Nid(couleur);
     if (implem == null) {
     	throw new RuntimeException("make_Nid() in clrobots.EcoNid should not return null.");
     }
@@ -365,8 +368,8 @@ public abstract class EcoNid {
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected EcoNid.Nid.Component newNid() {
-    EcoNid.Nid _implem = _createImplementationOfNid();
+  protected EcoNid.Nid.Component newNid(final Color couleur) {
+    EcoNid.Nid _implem = _createImplementationOfNid(couleur);
     return _implem._newComponent(new EcoNid.Nid.Requires() {},true);
   }
   
