@@ -1,0 +1,65 @@
+import clrobots.interfaces.IBoiteInfo
+import clrobots.interfaces.IEnvInfos
+import clrobots.interfaces.INidInfo
+import clrobots.interfaces.Igui
+import clrobots.interfaces.Iinteragir
+
+namespace clrobots{
+	
+	ecosystem EnvEco{
+		provides gui : Igui = environnement.gui
+		provides interagir : Iinteragir = environnement.interagir
+		provides envInfos: IEnvInfos = environnement.envInfos
+		
+		part forwardBoite: ForwardBoite[IBoiteInfo]
+		
+		part forwardNid: ForwardNid[INidInfo]
+		
+		part environnement: Environnement{
+			bind boitesInfos to forwardBoite.i
+			bind nidInfos to forwardNid.i
+		}
+		
+		species DynamicAssembledBoite{
+			 	use eb : ecoBoites.Boite
+			 	use fb : forwardBoite.AgentForward{
+			 		bind a to eb.boiteinfo
+			 	}
+		}
+		
+		species DynamicAssembledNid{
+			 	use en : ecoNids.Nid
+			 	use fn : forwardNid.AgentForward{
+			 		bind a to en.nidinfo
+			 	}
+		}
+		
+		part ecoBoites: EcoBoite
+		
+		part ecoNids: EcoNid
+		
+	}
+	
+	ecosystem Scenario[Runnable]{
+		
+		part envEco : EnvEco
+		
+		part ecoRobots : EcoRobot[Runnable]
+		
+		part forward: Forward[IEnvInfos, Iinteragir]{
+			bind i to envEco.envInfos
+			bind j to envEco.interagir
+		}
+		
+		species DynamicAssembledRobot{
+			use rb : ecoRobots.Robot{
+				bind envInfosR to fr.a
+				bind interaction to fr.b
+			}
+			use fr : forward.AgentForward 
+		}
+		
+
+		
+	}
+}

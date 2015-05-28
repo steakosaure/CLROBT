@@ -1,9 +1,8 @@
 package clrobots;
 
 import clrobots.interfaces.IBoiteInfo;
-import clrobots.interfaces.IFieldOfView;
+import clrobots.interfaces.IEnvInfos;
 import clrobots.interfaces.INidInfo;
-import clrobots.interfaces.IRobotInfo;
 import clrobots.interfaces.Igui;
 import clrobots.interfaces.Iinteragir;
 
@@ -14,19 +13,13 @@ public abstract class Environnement {
      * This can be called by the implementation to access this required port.
      * 
      */
-    public IRobotInfo robotinfo();
+    public IBoiteInfo boitesInfos();
     
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
-    public IBoiteInfo boiteinfo();
-    
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public INidInfo nidinfo();
+    public INidInfo nidInfos();
   }
   
   public interface Component extends Environnement.Provides {
@@ -43,13 +36,13 @@ public abstract class Environnement {
      * This can be called to access the provided port.
      * 
      */
-    public IFieldOfView fov();
+    public Iinteragir interagir();
     
     /**
      * This can be called to access the provided port.
      * 
      */
-    public Iinteragir interagir();
+    public IEnvInfos envInfos();
   }
   
   public interface Parts {
@@ -77,14 +70,6 @@ public abstract class Environnement {
       }
     }
     
-    private void init_fov() {
-      assert this.fov == null: "This is a bug.";
-      this.fov = this.implementation.make_fov();
-      if (this.fov == null) {
-      	throw new RuntimeException("make_fov() in clrobots.Environnement should not return null.");
-      }
-    }
-    
     private void init_interagir() {
       assert this.interagir == null: "This is a bug.";
       this.interagir = this.implementation.make_interagir();
@@ -93,10 +78,18 @@ public abstract class Environnement {
       }
     }
     
+    private void init_envInfos() {
+      assert this.envInfos == null: "This is a bug.";
+      this.envInfos = this.implementation.make_envInfos();
+      if (this.envInfos == null) {
+      	throw new RuntimeException("make_envInfos() in clrobots.Environnement should not return null.");
+      }
+    }
+    
     protected void initProvidedPorts() {
       init_gui();
-      init_fov();
       init_interagir();
+      init_envInfos();
     }
     
     public ComponentImpl(final Environnement implem, final Environnement.Requires b, final boolean doInits) {
@@ -121,16 +114,16 @@ public abstract class Environnement {
       return this.gui;
     }
     
-    private IFieldOfView fov;
-    
-    public IFieldOfView fov() {
-      return this.fov;
-    }
-    
     private Iinteragir interagir;
     
     public Iinteragir interagir() {
       return this.interagir;
+    }
+    
+    private IEnvInfos envInfos;
+    
+    public IEnvInfos envInfos() {
+      return this.envInfos;
     }
   }
   
@@ -185,14 +178,14 @@ public abstract class Environnement {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IFieldOfView make_fov();
+  protected abstract Iinteragir make_interagir();
   
   /**
    * This should be overridden by the implementation to define the provided port.
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract Iinteragir make_interagir();
+  protected abstract IEnvInfos make_envInfos();
   
   /**
    * This can be called by the implementation to access the required ports.

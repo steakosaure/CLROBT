@@ -1,18 +1,13 @@
 import clrobots.interfaces.ICreateBoite
-import clrobots.interfaces.ICreateDecider
-import clrobots.interfaces.ICreatePercevoir
 import clrobots.interfaces.ICreateRobot
 import clrobots.interfaces.IDecision
 import clrobots.interfaces.IEnvInfos
 import clrobots.interfaces.IPerception
-import clrobots.interfaces.IRobotInfo
 import clrobots.interfaces.Igui
 import clrobots.interfaces.IBoiteInfo
 import clrobots.interfaces.ICreateNid
 import clrobots.interfaces.INidInfo
-import clrobots.interfaces.IFieldOfView
 import clrobots.interfaces.Iinteragir
-import clrobots.interfaces.Irun
 import clrobots.interfaces.IAction
 
 namespace clrobots{
@@ -23,11 +18,10 @@ namespace clrobots{
 	
 	component Environnement {
 		provides gui : Igui
-		provides fov : IFieldOfView
 		provides interagir : Iinteragir
-		requires robotinfo : IRobotInfo
-		requires boiteinfo : IBoiteInfo
-		requires nidinfo : INidInfo
+		provides envInfos: IEnvInfos
+		requires boitesInfos :IBoiteInfo
+		requires nidInfos : INidInfo
 	}
 	
 	ecosystem EcoBoite{
@@ -37,6 +31,24 @@ namespace clrobots{
 		}
 	}
 	
+	ecosystem ForwardBoite[IBoiteInfo]{
+		species AgentForward{
+			requires a:IBoiteInfo
+			
+		}
+		
+		provides i: IBoiteInfo
+	}
+	
+	ecosystem ForwardNid[INidInfo]{
+		species AgentForward{
+			requires a:INidInfo
+			
+		}
+		
+		provides i: INidInfo
+	}
+	
 	ecosystem EcoNid{
 		provides create : ICreateNid
 		species Nid{
@@ -44,32 +56,49 @@ namespace clrobots{
 		}
 	}
 	
-	ecosystem EcoRobot{
-		provides create: ICreateRobot
-		
-		species Robot{
-			requires perception : IPerception
-			requires decision : IDecision
-			requires action : IAction
-			provides run : Irun
-			provides perceptionRobot : IPerception
-			provides decisionRobot : IDecision
-			provides infos : IRobotInfo 
+	ecosystem Forward[I,J]{
+		species AgentForward{
+			provides a: I
+			provides b:J
 		}
+		
+		requires i: I
+		requires j: J
 	}
 	
-	component Percevoir{
+	ecosystem EcoRobot[Runnable]{
+			provides create: ICreateRobot
+			
+			species Robot{
+				requires envInfosR: IEnvInfos 
+				requires interaction: Iinteragir
+				
+				part percevoir: Perception[Runnable]{
+					bind decision to decider.decision
+					bind envInfos to envInfosR
+				}
+				
+				part decider: Decision[Runnable]{
+					bind action to agir.action
+				}
+				part agir: Action[Runnable]{
+					bind interagir to interaction
+				}
+			}
+		}
+		
+	component Perception[Runnable]{
 		provides perception : IPerception
 		requires envInfos : IEnvInfos
+		requires decision: IDecision
 	}
 	
-	component Decider{
+	component Decision[Runnable]{
 		provides decision : IDecision
-		requires perception : IPerception
+		requires action: IAction
 	}
 	
-	component Agir{
-		requires decision : IDecision
+	component Action[Runnable]{
 		provides action : IAction
 		requires interagir : Iinteragir
 	}

@@ -1,7 +1,7 @@
 package clrobots.impl;
 
 import clrobots.Environnement;
-import clrobots.interfaces.IFieldOfView;
+import clrobots.interfaces.IEnvInfos;
 import clrobots.interfaces.Igui;
 import clrobots.interfaces.Iinteragir;
 
@@ -14,16 +14,18 @@ public class EnvironnementImpl extends Environnement{
 	}
 
 	@Override
-	protected IFieldOfView make_fov() {
+	protected Iinteragir make_interagir() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	protected Iinteragir make_interagir() {
+	protected IEnvInfos make_envInfos() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+
 	
 
 

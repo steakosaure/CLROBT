@@ -1,14 +1,14 @@
-package clrobots;
+package test;
 
-import clrobots.interfaces.ICreateNid;
-import clrobots.interfaces.INidInfo;
+import clrobots.interfaces.IBoiteInfo;
+import clrobots.interfaces.ICreateBoite;
 
 @SuppressWarnings("all")
-public abstract class EcoNid {
+public abstract class EcoBoite {
   public interface Requires {
   }
   
-  public interface Component extends EcoNid.Provides {
+  public interface Component extends EcoBoite.Provides {
   }
   
   public interface Provides {
@@ -16,16 +16,22 @@ public abstract class EcoNid {
      * This can be called to access the provided port.
      * 
      */
-    public ICreateNid create();
+    public IBoiteInfo boitesInfos();
+    
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public ICreateBoite boiteCreate();
   }
   
   public interface Parts {
   }
   
-  public static class ComponentImpl implements EcoNid.Component, EcoNid.Parts {
-    private final EcoNid.Requires bridge;
+  public static class ComponentImpl implements EcoBoite.Component, EcoBoite.Parts {
+    private final EcoBoite.Requires bridge;
     
-    private final EcoNid implementation;
+    private final EcoBoite implementation;
     
     public void start() {
       this.implementation.start();
@@ -36,19 +42,28 @@ public abstract class EcoNid {
       
     }
     
-    private void init_create() {
-      assert this.create == null: "This is a bug.";
-      this.create = this.implementation.make_create();
-      if (this.create == null) {
-      	throw new RuntimeException("make_create() in clrobots.EcoNid should not return null.");
+    private void init_boitesInfos() {
+      assert this.boitesInfos == null: "This is a bug.";
+      this.boitesInfos = this.implementation.make_boitesInfos();
+      if (this.boitesInfos == null) {
+      	throw new RuntimeException("make_boitesInfos() in test.EcoBoite should not return null.");
+      }
+    }
+    
+    private void init_boiteCreate() {
+      assert this.boiteCreate == null: "This is a bug.";
+      this.boiteCreate = this.implementation.make_boiteCreate();
+      if (this.boiteCreate == null) {
+      	throw new RuntimeException("make_boiteCreate() in test.EcoBoite should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_create();
+      init_boitesInfos();
+      init_boiteCreate();
     }
     
-    public ComponentImpl(final EcoNid implem, final EcoNid.Requires b, final boolean doInits) {
+    public ComponentImpl(final EcoBoite implem, final EcoBoite.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -64,35 +79,36 @@ public abstract class EcoNid {
       }
     }
     
-    private ICreateNid create;
+    private IBoiteInfo boitesInfos;
     
-    public ICreateNid create() {
-      return this.create;
+    public IBoiteInfo boitesInfos() {
+      return this.boitesInfos;
+    }
+    
+    private ICreateBoite boiteCreate;
+    
+    public ICreateBoite boiteCreate() {
+      return this.boiteCreate;
     }
   }
   
-  public static abstract class Nid {
+  public static class BoiteSpecies {
     public interface Requires {
     }
     
-    public interface Component extends EcoNid.Nid.Provides {
+    public interface Component extends EcoBoite.BoiteSpecies.Provides {
     }
     
     public interface Provides {
-      /**
-       * This can be called to access the provided port.
-       * 
-       */
-      public INidInfo nidinfo();
     }
     
     public interface Parts {
     }
     
-    public static class ComponentImpl implements EcoNid.Nid.Component, EcoNid.Nid.Parts {
-      private final EcoNid.Nid.Requires bridge;
+    public static class ComponentImpl implements EcoBoite.BoiteSpecies.Component, EcoBoite.BoiteSpecies.Parts {
+      private final EcoBoite.BoiteSpecies.Requires bridge;
       
-      private final EcoNid.Nid implementation;
+      private final EcoBoite.BoiteSpecies implementation;
       
       public void start() {
         this.implementation.start();
@@ -103,19 +119,11 @@ public abstract class EcoNid {
         
       }
       
-      private void init_nidinfo() {
-        assert this.nidinfo == null: "This is a bug.";
-        this.nidinfo = this.implementation.make_nidinfo();
-        if (this.nidinfo == null) {
-        	throw new RuntimeException("make_nidinfo() in clrobots.EcoNid$Nid should not return null.");
-        }
-      }
-      
       protected void initProvidedPorts() {
-        init_nidinfo();
+        
       }
       
-      public ComponentImpl(final EcoNid.Nid implem, final EcoNid.Nid.Requires b, final boolean doInits) {
+      public ComponentImpl(final EcoBoite.BoiteSpecies implem, final EcoBoite.BoiteSpecies.Requires b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -129,12 +137,6 @@ public abstract class EcoNid {
         	initParts();
         	initProvidedPorts();
         }
-      }
-      
-      private INidInfo nidinfo;
-      
-      public INidInfo nidinfo() {
-        return this.nidinfo;
       }
     }
     
@@ -152,7 +154,7 @@ public abstract class EcoNid {
      */
     private boolean started = false;;
     
-    private EcoNid.Nid.ComponentImpl selfComponent;
+    private EcoBoite.BoiteSpecies.ComponentImpl selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -169,7 +171,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoNid.Nid.Provides provides() {
+    protected EcoBoite.BoiteSpecies.Provides provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -178,17 +180,10 @@ public abstract class EcoNid {
     }
     
     /**
-     * This should be overridden by the implementation to define the provided port.
-     * This will be called once during the construction of the component to initialize the port.
-     * 
-     */
-    protected abstract INidInfo make_nidinfo();
-    
-    /**
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoNid.Nid.Requires requires() {
+    protected EcoBoite.BoiteSpecies.Requires requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -200,7 +195,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoNid.Nid.Parts parts() {
+    protected EcoBoite.BoiteSpecies.Parts parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -212,25 +207,25 @@ public abstract class EcoNid {
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoNid.Nid.Component _newComponent(final EcoNid.Nid.Requires b, final boolean start) {
+    public synchronized EcoBoite.BoiteSpecies.Component _newComponent(final EcoBoite.BoiteSpecies.Requires b, final boolean start) {
       if (this.init) {
-      	throw new RuntimeException("This instance of Nid has already been used to create a component, use another one.");
+      	throw new RuntimeException("This instance of BoiteSpecies has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoNid.Nid.ComponentImpl  _comp = new EcoNid.Nid.ComponentImpl(this, b, true);
+      EcoBoite.BoiteSpecies.ComponentImpl  _comp = new EcoBoite.BoiteSpecies.ComponentImpl(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoNid.ComponentImpl ecosystemComponent;
+    private EcoBoite.ComponentImpl ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoNid.Provides eco_provides() {
+    protected EcoBoite.Provides eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -239,7 +234,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoNid.Requires eco_requires() {
+    protected EcoBoite.Requires eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -248,7 +243,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoNid.Parts eco_parts() {
+    protected EcoBoite.Parts eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -268,7 +263,7 @@ public abstract class EcoNid {
    */
   private boolean started = false;;
   
-  private EcoNid.ComponentImpl selfComponent;
+  private EcoBoite.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -285,7 +280,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoNid.Provides provides() {
+  protected EcoBoite.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -298,13 +293,20 @@ public abstract class EcoNid {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract ICreateNid make_create();
+  protected abstract IBoiteInfo make_boitesInfos();
+  
+  /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract ICreateBoite make_boiteCreate();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoNid.Requires requires() {
+  protected EcoBoite.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -316,7 +318,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoNid.Parts parts() {
+  protected EcoBoite.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -328,12 +330,12 @@ public abstract class EcoNid {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoNid.Component _newComponent(final EcoNid.Requires b, final boolean start) {
+  public synchronized EcoBoite.Component _newComponent(final EcoBoite.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of EcoNid has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of EcoBoite has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoNid.ComponentImpl  _comp = new EcoNid.ComponentImpl(this, b, true);
+    EcoBoite.ComponentImpl  _comp = new EcoBoite.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -344,16 +346,18 @@ public abstract class EcoNid {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoNid.Nid make_Nid();
+  protected EcoBoite.BoiteSpecies make_BoiteSpecies() {
+    return new EcoBoite.BoiteSpecies();
+  }
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoNid.Nid _createImplementationOfNid() {
-    EcoNid.Nid implem = make_Nid();
+  public EcoBoite.BoiteSpecies _createImplementationOfBoiteSpecies() {
+    EcoBoite.BoiteSpecies implem = make_BoiteSpecies();
     if (implem == null) {
-    	throw new RuntimeException("make_Nid() in clrobots.EcoNid should not return null.");
+    	throw new RuntimeException("make_BoiteSpecies() in test.EcoBoite should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
@@ -365,16 +369,16 @@ public abstract class EcoNid {
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected EcoNid.Nid.Component newNid() {
-    EcoNid.Nid _implem = _createImplementationOfNid();
-    return _implem._newComponent(new EcoNid.Nid.Requires() {},true);
+  protected EcoBoite.BoiteSpecies.Component newBoiteSpecies() {
+    EcoBoite.BoiteSpecies _implem = _createImplementationOfBoiteSpecies();
+    return _implem._newComponent(new EcoBoite.BoiteSpecies.Requires() {},true);
   }
   
   /**
    * Use to instantiate a component from this implementation.
    * 
    */
-  public EcoNid.Component newComponent() {
-    return this._newComponent(new EcoNid.Requires() {}, true);
+  public EcoBoite.Component newComponent() {
+    return this._newComponent(new EcoBoite.Requires() {}, true);
   }
 }

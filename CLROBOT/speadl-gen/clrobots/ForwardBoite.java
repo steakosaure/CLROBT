@@ -1,31 +1,28 @@
 package clrobots;
 
-import clrobots.interfaces.ICreateNid;
-import clrobots.interfaces.INidInfo;
-
 @SuppressWarnings("all")
-public abstract class EcoNid {
-  public interface Requires {
+public abstract class ForwardBoite<IBoiteInfo> {
+  public interface Requires<IBoiteInfo> {
   }
   
-  public interface Component extends EcoNid.Provides {
+  public interface Component<IBoiteInfo> extends ForwardBoite.Provides<IBoiteInfo> {
   }
   
-  public interface Provides {
+  public interface Provides<IBoiteInfo> {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public ICreateNid create();
+    public IBoiteInfo i();
   }
   
-  public interface Parts {
+  public interface Parts<IBoiteInfo> {
   }
   
-  public static class ComponentImpl implements EcoNid.Component, EcoNid.Parts {
-    private final EcoNid.Requires bridge;
+  public static class ComponentImpl<IBoiteInfo> implements ForwardBoite.Component<IBoiteInfo>, ForwardBoite.Parts<IBoiteInfo> {
+    private final ForwardBoite.Requires<IBoiteInfo> bridge;
     
-    private final EcoNid implementation;
+    private final ForwardBoite<IBoiteInfo> implementation;
     
     public void start() {
       this.implementation.start();
@@ -36,19 +33,19 @@ public abstract class EcoNid {
       
     }
     
-    private void init_create() {
-      assert this.create == null: "This is a bug.";
-      this.create = this.implementation.make_create();
-      if (this.create == null) {
-      	throw new RuntimeException("make_create() in clrobots.EcoNid should not return null.");
+    private void init_i() {
+      assert this.i == null: "This is a bug.";
+      this.i = this.implementation.make_i();
+      if (this.i == null) {
+      	throw new RuntimeException("make_i() in clrobots.ForwardBoite<IBoiteInfo> should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_create();
+      init_i();
     }
     
-    public ComponentImpl(final EcoNid implem, final EcoNid.Requires b, final boolean doInits) {
+    public ComponentImpl(final ForwardBoite<IBoiteInfo> implem, final ForwardBoite.Requires<IBoiteInfo> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -64,35 +61,35 @@ public abstract class EcoNid {
       }
     }
     
-    private ICreateNid create;
+    private IBoiteInfo i;
     
-    public ICreateNid create() {
-      return this.create;
+    public IBoiteInfo i() {
+      return this.i;
     }
   }
   
-  public static abstract class Nid {
-    public interface Requires {
-    }
-    
-    public interface Component extends EcoNid.Nid.Provides {
-    }
-    
-    public interface Provides {
+  public static class AgentForward<IBoiteInfo> {
+    public interface Requires<IBoiteInfo> {
       /**
-       * This can be called to access the provided port.
+       * This can be called by the implementation to access this required port.
        * 
        */
-      public INidInfo nidinfo();
+      public IBoiteInfo a();
     }
     
-    public interface Parts {
+    public interface Component<IBoiteInfo> extends ForwardBoite.AgentForward.Provides<IBoiteInfo> {
     }
     
-    public static class ComponentImpl implements EcoNid.Nid.Component, EcoNid.Nid.Parts {
-      private final EcoNid.Nid.Requires bridge;
+    public interface Provides<IBoiteInfo> {
+    }
+    
+    public interface Parts<IBoiteInfo> {
+    }
+    
+    public static class ComponentImpl<IBoiteInfo> implements ForwardBoite.AgentForward.Component<IBoiteInfo>, ForwardBoite.AgentForward.Parts<IBoiteInfo> {
+      private final ForwardBoite.AgentForward.Requires<IBoiteInfo> bridge;
       
-      private final EcoNid.Nid implementation;
+      private final ForwardBoite.AgentForward<IBoiteInfo> implementation;
       
       public void start() {
         this.implementation.start();
@@ -103,19 +100,11 @@ public abstract class EcoNid {
         
       }
       
-      private void init_nidinfo() {
-        assert this.nidinfo == null: "This is a bug.";
-        this.nidinfo = this.implementation.make_nidinfo();
-        if (this.nidinfo == null) {
-        	throw new RuntimeException("make_nidinfo() in clrobots.EcoNid$Nid should not return null.");
-        }
-      }
-      
       protected void initProvidedPorts() {
-        init_nidinfo();
+        
       }
       
-      public ComponentImpl(final EcoNid.Nid implem, final EcoNid.Nid.Requires b, final boolean doInits) {
+      public ComponentImpl(final ForwardBoite.AgentForward<IBoiteInfo> implem, final ForwardBoite.AgentForward.Requires<IBoiteInfo> b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -129,12 +118,6 @@ public abstract class EcoNid {
         	initParts();
         	initProvidedPorts();
         }
-      }
-      
-      private INidInfo nidinfo;
-      
-      public INidInfo nidinfo() {
-        return this.nidinfo;
       }
     }
     
@@ -152,7 +135,7 @@ public abstract class EcoNid {
      */
     private boolean started = false;;
     
-    private EcoNid.Nid.ComponentImpl selfComponent;
+    private ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo> selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -169,7 +152,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoNid.Nid.Provides provides() {
+    protected ForwardBoite.AgentForward.Provides<IBoiteInfo> provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -178,17 +161,10 @@ public abstract class EcoNid {
     }
     
     /**
-     * This should be overridden by the implementation to define the provided port.
-     * This will be called once during the construction of the component to initialize the port.
-     * 
-     */
-    protected abstract INidInfo make_nidinfo();
-    
-    /**
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoNid.Nid.Requires requires() {
+    protected ForwardBoite.AgentForward.Requires<IBoiteInfo> requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -200,7 +176,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoNid.Nid.Parts parts() {
+    protected ForwardBoite.AgentForward.Parts<IBoiteInfo> parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -212,25 +188,25 @@ public abstract class EcoNid {
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoNid.Nid.Component _newComponent(final EcoNid.Nid.Requires b, final boolean start) {
+    public synchronized ForwardBoite.AgentForward.Component<IBoiteInfo> _newComponent(final ForwardBoite.AgentForward.Requires<IBoiteInfo> b, final boolean start) {
       if (this.init) {
-      	throw new RuntimeException("This instance of Nid has already been used to create a component, use another one.");
+      	throw new RuntimeException("This instance of AgentForward has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoNid.Nid.ComponentImpl  _comp = new EcoNid.Nid.ComponentImpl(this, b, true);
+      ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo>  _comp = new ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo>(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoNid.ComponentImpl ecosystemComponent;
+    private ForwardBoite.ComponentImpl<IBoiteInfo> ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoNid.Provides eco_provides() {
+    protected ForwardBoite.Provides<IBoiteInfo> eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -239,7 +215,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoNid.Requires eco_requires() {
+    protected ForwardBoite.Requires<IBoiteInfo> eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -248,7 +224,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoNid.Parts eco_parts() {
+    protected ForwardBoite.Parts<IBoiteInfo> eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -268,7 +244,7 @@ public abstract class EcoNid {
    */
   private boolean started = false;;
   
-  private EcoNid.ComponentImpl selfComponent;
+  private ForwardBoite.ComponentImpl<IBoiteInfo> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -285,7 +261,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoNid.Provides provides() {
+  protected ForwardBoite.Provides<IBoiteInfo> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -298,13 +274,13 @@ public abstract class EcoNid {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract ICreateNid make_create();
+  protected abstract IBoiteInfo make_i();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoNid.Requires requires() {
+  protected ForwardBoite.Requires<IBoiteInfo> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -316,7 +292,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoNid.Parts parts() {
+  protected ForwardBoite.Parts<IBoiteInfo> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -328,12 +304,12 @@ public abstract class EcoNid {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoNid.Component _newComponent(final EcoNid.Requires b, final boolean start) {
+  public synchronized ForwardBoite.Component<IBoiteInfo> _newComponent(final ForwardBoite.Requires<IBoiteInfo> b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of EcoNid has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of ForwardBoite has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoNid.ComponentImpl  _comp = new EcoNid.ComponentImpl(this, b, true);
+    ForwardBoite.ComponentImpl<IBoiteInfo>  _comp = new ForwardBoite.ComponentImpl<IBoiteInfo>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -344,16 +320,18 @@ public abstract class EcoNid {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoNid.Nid make_Nid();
+  protected ForwardBoite.AgentForward<IBoiteInfo> make_AgentForward() {
+    return new ForwardBoite.AgentForward<IBoiteInfo>();
+  }
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoNid.Nid _createImplementationOfNid() {
-    EcoNid.Nid implem = make_Nid();
+  public ForwardBoite.AgentForward<IBoiteInfo> _createImplementationOfAgentForward() {
+    ForwardBoite.AgentForward<IBoiteInfo> implem = make_AgentForward();
     if (implem == null) {
-    	throw new RuntimeException("make_Nid() in clrobots.EcoNid should not return null.");
+    	throw new RuntimeException("make_AgentForward() in clrobots.ForwardBoite should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
@@ -362,19 +340,10 @@ public abstract class EcoNid {
   }
   
   /**
-   * This can be called to create an instance of the species from inside the implementation of the ecosystem.
-   * 
-   */
-  protected EcoNid.Nid.Component newNid() {
-    EcoNid.Nid _implem = _createImplementationOfNid();
-    return _implem._newComponent(new EcoNid.Nid.Requires() {},true);
-  }
-  
-  /**
    * Use to instantiate a component from this implementation.
    * 
    */
-  public EcoNid.Component newComponent() {
-    return this._newComponent(new EcoNid.Requires() {}, true);
+  public ForwardBoite.Component<IBoiteInfo> newComponent() {
+    return this._newComponent(new ForwardBoite.Requires<IBoiteInfo>() {}, true);
   }
 }

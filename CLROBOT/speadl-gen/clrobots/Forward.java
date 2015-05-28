@@ -1,31 +1,34 @@
 package clrobots;
 
-import clrobots.interfaces.ICreateNid;
-import clrobots.interfaces.INidInfo;
-
 @SuppressWarnings("all")
-public abstract class EcoNid {
-  public interface Requires {
-  }
-  
-  public interface Component extends EcoNid.Provides {
-  }
-  
-  public interface Provides {
+public abstract class Forward<I, J> {
+  public interface Requires<I, J> {
     /**
-     * This can be called to access the provided port.
+     * This can be called by the implementation to access this required port.
      * 
      */
-    public ICreateNid create();
-  }
-  
-  public interface Parts {
-  }
-  
-  public static class ComponentImpl implements EcoNid.Component, EcoNid.Parts {
-    private final EcoNid.Requires bridge;
+    public I i();
     
-    private final EcoNid implementation;
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public J j();
+  }
+  
+  public interface Component<I, J> extends Forward.Provides<I, J> {
+  }
+  
+  public interface Provides<I, J> {
+  }
+  
+  public interface Parts<I, J> {
+  }
+  
+  public static class ComponentImpl<I, J> implements Forward.Component<I, J>, Forward.Parts<I, J> {
+    private final Forward.Requires<I, J> bridge;
+    
+    private final Forward<I, J> implementation;
     
     public void start() {
       this.implementation.start();
@@ -36,19 +39,11 @@ public abstract class EcoNid {
       
     }
     
-    private void init_create() {
-      assert this.create == null: "This is a bug.";
-      this.create = this.implementation.make_create();
-      if (this.create == null) {
-      	throw new RuntimeException("make_create() in clrobots.EcoNid should not return null.");
-      }
-    }
-    
     protected void initProvidedPorts() {
-      init_create();
+      
     }
     
-    public ComponentImpl(final EcoNid implem, final EcoNid.Requires b, final boolean doInits) {
+    public ComponentImpl(final Forward<I, J> implem, final Forward.Requires<I, J> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -63,36 +58,36 @@ public abstract class EcoNid {
       	initProvidedPorts();
       }
     }
-    
-    private ICreateNid create;
-    
-    public ICreateNid create() {
-      return this.create;
-    }
   }
   
-  public static abstract class Nid {
-    public interface Requires {
+  public static abstract class AgentForward<I, J> {
+    public interface Requires<I, J> {
     }
     
-    public interface Component extends EcoNid.Nid.Provides {
+    public interface Component<I, J> extends Forward.AgentForward.Provides<I, J> {
     }
     
-    public interface Provides {
+    public interface Provides<I, J> {
       /**
        * This can be called to access the provided port.
        * 
        */
-      public INidInfo nidinfo();
-    }
-    
-    public interface Parts {
-    }
-    
-    public static class ComponentImpl implements EcoNid.Nid.Component, EcoNid.Nid.Parts {
-      private final EcoNid.Nid.Requires bridge;
+      public I a();
       
-      private final EcoNid.Nid implementation;
+      /**
+       * This can be called to access the provided port.
+       * 
+       */
+      public J b();
+    }
+    
+    public interface Parts<I, J> {
+    }
+    
+    public static class ComponentImpl<I, J> implements Forward.AgentForward.Component<I, J>, Forward.AgentForward.Parts<I, J> {
+      private final Forward.AgentForward.Requires<I, J> bridge;
+      
+      private final Forward.AgentForward<I, J> implementation;
       
       public void start() {
         this.implementation.start();
@@ -103,19 +98,28 @@ public abstract class EcoNid {
         
       }
       
-      private void init_nidinfo() {
-        assert this.nidinfo == null: "This is a bug.";
-        this.nidinfo = this.implementation.make_nidinfo();
-        if (this.nidinfo == null) {
-        	throw new RuntimeException("make_nidinfo() in clrobots.EcoNid$Nid should not return null.");
+      private void init_a() {
+        assert this.a == null: "This is a bug.";
+        this.a = this.implementation.make_a();
+        if (this.a == null) {
+        	throw new RuntimeException("make_a() in clrobots.Forward$AgentForward<I, J> should not return null.");
+        }
+      }
+      
+      private void init_b() {
+        assert this.b == null: "This is a bug.";
+        this.b = this.implementation.make_b();
+        if (this.b == null) {
+        	throw new RuntimeException("make_b() in clrobots.Forward$AgentForward<I, J> should not return null.");
         }
       }
       
       protected void initProvidedPorts() {
-        init_nidinfo();
+        init_a();
+        init_b();
       }
       
-      public ComponentImpl(final EcoNid.Nid implem, final EcoNid.Nid.Requires b, final boolean doInits) {
+      public ComponentImpl(final Forward.AgentForward<I, J> implem, final Forward.AgentForward.Requires<I, J> b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -131,10 +135,16 @@ public abstract class EcoNid {
         }
       }
       
-      private INidInfo nidinfo;
+      private I a;
       
-      public INidInfo nidinfo() {
-        return this.nidinfo;
+      public I a() {
+        return this.a;
+      }
+      
+      private J b;
+      
+      public J b() {
+        return this.b;
       }
     }
     
@@ -152,7 +162,7 @@ public abstract class EcoNid {
      */
     private boolean started = false;;
     
-    private EcoNid.Nid.ComponentImpl selfComponent;
+    private Forward.AgentForward.ComponentImpl<I, J> selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -169,7 +179,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoNid.Nid.Provides provides() {
+    protected Forward.AgentForward.Provides<I, J> provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -182,13 +192,20 @@ public abstract class EcoNid {
      * This will be called once during the construction of the component to initialize the port.
      * 
      */
-    protected abstract INidInfo make_nidinfo();
+    protected abstract I make_a();
+    
+    /**
+     * This should be overridden by the implementation to define the provided port.
+     * This will be called once during the construction of the component to initialize the port.
+     * 
+     */
+    protected abstract J make_b();
     
     /**
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoNid.Nid.Requires requires() {
+    protected Forward.AgentForward.Requires<I, J> requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -200,7 +217,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoNid.Nid.Parts parts() {
+    protected Forward.AgentForward.Parts<I, J> parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -212,25 +229,25 @@ public abstract class EcoNid {
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoNid.Nid.Component _newComponent(final EcoNid.Nid.Requires b, final boolean start) {
+    public synchronized Forward.AgentForward.Component<I, J> _newComponent(final Forward.AgentForward.Requires<I, J> b, final boolean start) {
       if (this.init) {
-      	throw new RuntimeException("This instance of Nid has already been used to create a component, use another one.");
+      	throw new RuntimeException("This instance of AgentForward has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoNid.Nid.ComponentImpl  _comp = new EcoNid.Nid.ComponentImpl(this, b, true);
+      Forward.AgentForward.ComponentImpl<I, J>  _comp = new Forward.AgentForward.ComponentImpl<I, J>(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoNid.ComponentImpl ecosystemComponent;
+    private Forward.ComponentImpl<I, J> ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoNid.Provides eco_provides() {
+    protected Forward.Provides<I, J> eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -239,7 +256,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoNid.Requires eco_requires() {
+    protected Forward.Requires<I, J> eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -248,7 +265,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoNid.Parts eco_parts() {
+    protected Forward.Parts<I, J> eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -268,7 +285,7 @@ public abstract class EcoNid {
    */
   private boolean started = false;;
   
-  private EcoNid.ComponentImpl selfComponent;
+  private Forward.ComponentImpl<I, J> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -285,7 +302,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoNid.Provides provides() {
+  protected Forward.Provides<I, J> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -294,17 +311,10 @@ public abstract class EcoNid {
   }
   
   /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract ICreateNid make_create();
-  
-  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoNid.Requires requires() {
+  protected Forward.Requires<I, J> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -316,7 +326,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoNid.Parts parts() {
+  protected Forward.Parts<I, J> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -328,12 +338,12 @@ public abstract class EcoNid {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoNid.Component _newComponent(final EcoNid.Requires b, final boolean start) {
+  public synchronized Forward.Component<I, J> _newComponent(final Forward.Requires<I, J> b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of EcoNid has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Forward has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoNid.ComponentImpl  _comp = new EcoNid.ComponentImpl(this, b, true);
+    Forward.ComponentImpl<I, J>  _comp = new Forward.ComponentImpl<I, J>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -344,16 +354,16 @@ public abstract class EcoNid {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoNid.Nid make_Nid();
+  protected abstract Forward.AgentForward<I, J> make_AgentForward();
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoNid.Nid _createImplementationOfNid() {
-    EcoNid.Nid implem = make_Nid();
+  public Forward.AgentForward<I, J> _createImplementationOfAgentForward() {
+    Forward.AgentForward<I, J> implem = make_AgentForward();
     if (implem == null) {
-    	throw new RuntimeException("make_Nid() in clrobots.EcoNid should not return null.");
+    	throw new RuntimeException("make_AgentForward() in clrobots.Forward should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
@@ -365,16 +375,8 @@ public abstract class EcoNid {
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected EcoNid.Nid.Component newNid() {
-    EcoNid.Nid _implem = _createImplementationOfNid();
-    return _implem._newComponent(new EcoNid.Nid.Requires() {},true);
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public EcoNid.Component newComponent() {
-    return this._newComponent(new EcoNid.Requires() {}, true);
+  protected Forward.AgentForward.Component<I, J> newAgentForward() {
+    Forward.AgentForward<I, J> _implem = _createImplementationOfAgentForward();
+    return _implem._newComponent(new Forward.AgentForward.Requires<I, J>() {},true);
   }
 }

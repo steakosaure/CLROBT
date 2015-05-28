@@ -1,30 +1,43 @@
 package clrobots;
 
-import clrobots.interfaces.Igui;
+import clrobots.interfaces.IDecision;
+import clrobots.interfaces.IEnvInfos;
+import clrobots.interfaces.IPerception;
 
 @SuppressWarnings("all")
-public class GUI {
-  public interface Requires {
+public abstract class Perception<Runnable> {
+  public interface Requires<Runnable> {
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
-    public Igui gui();
-  }
-  
-  public interface Component extends GUI.Provides {
-  }
-  
-  public interface Provides {
-  }
-  
-  public interface Parts {
-  }
-  
-  public static class ComponentImpl implements GUI.Component, GUI.Parts {
-    private final GUI.Requires bridge;
+    public IEnvInfos envInfos();
     
-    private final GUI implementation;
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public IDecision decision();
+  }
+  
+  public interface Component<Runnable> extends Perception.Provides<Runnable> {
+  }
+  
+  public interface Provides<Runnable> {
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public IPerception perception();
+  }
+  
+  public interface Parts<Runnable> {
+  }
+  
+  public static class ComponentImpl<Runnable> implements Perception.Component<Runnable>, Perception.Parts<Runnable> {
+    private final Perception.Requires<Runnable> bridge;
+    
+    private final Perception<Runnable> implementation;
     
     public void start() {
       this.implementation.start();
@@ -35,11 +48,19 @@ public class GUI {
       
     }
     
-    protected void initProvidedPorts() {
-      
+    private void init_perception() {
+      assert this.perception == null: "This is a bug.";
+      this.perception = this.implementation.make_perception();
+      if (this.perception == null) {
+      	throw new RuntimeException("make_perception() in clrobots.Perception<Runnable> should not return null.");
+      }
     }
     
-    public ComponentImpl(final GUI implem, final GUI.Requires b, final boolean doInits) {
+    protected void initProvidedPorts() {
+      init_perception();
+    }
+    
+    public ComponentImpl(final Perception<Runnable> implem, final Perception.Requires<Runnable> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -53,6 +74,12 @@ public class GUI {
       	initParts();
       	initProvidedPorts();
       }
+    }
+    
+    private IPerception perception;
+    
+    public IPerception perception() {
+      return this.perception;
     }
   }
   
@@ -70,7 +97,7 @@ public class GUI {
    */
   private boolean started = false;;
   
-  private GUI.ComponentImpl selfComponent;
+  private Perception.ComponentImpl<Runnable> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -87,7 +114,7 @@ public class GUI {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected GUI.Provides provides() {
+  protected Perception.Provides<Runnable> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -96,10 +123,17 @@ public class GUI {
   }
   
   /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract IPerception make_perception();
+  
+  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected GUI.Requires requires() {
+  protected Perception.Requires<Runnable> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -111,7 +145,7 @@ public class GUI {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected GUI.Parts parts() {
+  protected Perception.Parts<Runnable> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -123,12 +157,12 @@ public class GUI {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized GUI.Component _newComponent(final GUI.Requires b, final boolean start) {
+  public synchronized Perception.Component<Runnable> _newComponent(final Perception.Requires<Runnable> b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of GUI has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Perception has already been used to create a component, use another one.");
     }
     this.init = true;
-    GUI.ComponentImpl  _comp = new GUI.ComponentImpl(this, b, true);
+    Perception.ComponentImpl<Runnable>  _comp = new Perception.ComponentImpl<Runnable>(this, b, true);
     if (start) {
     	_comp.start();
     }

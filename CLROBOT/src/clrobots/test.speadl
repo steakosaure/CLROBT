@@ -1,0 +1,15 @@
+import clrobots.interfaces.IBoiteInfo
+import clrobots.interfaces.ICreateBoite
+
+namespace test{
+	
+	ecosystem EcoBoite{
+		
+		provides boitesInfos: IBoiteInfo
+		provides boiteCreate: ICreateBoite
+		
+		species BoiteSpecies{
+			
+		}
+	}
+}

@@ -1,30 +1,36 @@
 package clrobots;
 
-import clrobots.interfaces.Igui;
+import clrobots.interfaces.IAction;
+import clrobots.interfaces.IDecision;
 
 @SuppressWarnings("all")
-public class GUI {
-  public interface Requires {
+public abstract class Decision<Runnable> {
+  public interface Requires<Runnable> {
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
-    public Igui gui();
+    public IAction action();
   }
   
-  public interface Component extends GUI.Provides {
+  public interface Component<Runnable> extends Decision.Provides<Runnable> {
   }
   
-  public interface Provides {
+  public interface Provides<Runnable> {
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public IDecision decision();
   }
   
-  public interface Parts {
+  public interface Parts<Runnable> {
   }
   
-  public static class ComponentImpl implements GUI.Component, GUI.Parts {
-    private final GUI.Requires bridge;
+  public static class ComponentImpl<Runnable> implements Decision.Component<Runnable>, Decision.Parts<Runnable> {
+    private final Decision.Requires<Runnable> bridge;
     
-    private final GUI implementation;
+    private final Decision<Runnable> implementation;
     
     public void start() {
       this.implementation.start();
@@ -35,11 +41,19 @@ public class GUI {
       
     }
     
-    protected void initProvidedPorts() {
-      
+    private void init_decision() {
+      assert this.decision == null: "This is a bug.";
+      this.decision = this.implementation.make_decision();
+      if (this.decision == null) {
+      	throw new RuntimeException("make_decision() in clrobots.Decision<Runnable> should not return null.");
+      }
     }
     
-    public ComponentImpl(final GUI implem, final GUI.Requires b, final boolean doInits) {
+    protected void initProvidedPorts() {
+      init_decision();
+    }
+    
+    public ComponentImpl(final Decision<Runnable> implem, final Decision.Requires<Runnable> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -53,6 +67,12 @@ public class GUI {
       	initParts();
       	initProvidedPorts();
       }
+    }
+    
+    private IDecision decision;
+    
+    public IDecision decision() {
+      return this.decision;
     }
   }
   
@@ -70,7 +90,7 @@ public class GUI {
    */
   private boolean started = false;;
   
-  private GUI.ComponentImpl selfComponent;
+  private Decision.ComponentImpl<Runnable> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -87,7 +107,7 @@ public class GUI {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected GUI.Provides provides() {
+  protected Decision.Provides<Runnable> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -96,10 +116,17 @@ public class GUI {
   }
   
   /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract IDecision make_decision();
+  
+  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected GUI.Requires requires() {
+  protected Decision.Requires<Runnable> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -111,7 +138,7 @@ public class GUI {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected GUI.Parts parts() {
+  protected Decision.Parts<Runnable> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -123,12 +150,12 @@ public class GUI {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized GUI.Component _newComponent(final GUI.Requires b, final boolean start) {
+  public synchronized Decision.Component<Runnable> _newComponent(final Decision.Requires<Runnable> b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of GUI has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Decision has already been used to create a component, use another one.");
     }
     this.init = true;
-    GUI.ComponentImpl  _comp = new GUI.ComponentImpl(this, b, true);
+    Decision.ComponentImpl<Runnable>  _comp = new Decision.ComponentImpl<Runnable>(this, b, true);
     if (start) {
     	_comp.start();
     }
