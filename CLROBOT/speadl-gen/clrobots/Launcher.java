@@ -1,36 +1,44 @@
 package clrobots;
 
-import clrobots.interfaces.IAction;
-import clrobots.interfaces.Iinteragir;
+import clrobots.interfaces.Callable;
+import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.ITakeThreads;
 
 @SuppressWarnings("all")
-public abstract class Action<Runnable> {
-  public interface Requires<Runnable> {
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public Iinteragir interagir();
+public abstract class Launcher {
+  public interface Requires {
   }
   
-  public interface Component<Runnable> extends Action.Provides<Runnable> {
+  public interface Component extends Launcher.Provides {
   }
   
-  public interface Provides<Runnable> {
+  public interface Provides {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public IAction action();
-  }
-  
-  public interface Parts<Runnable> {
-  }
-  
-  public static class ComponentImpl<Runnable> implements Action.Component<Runnable>, Action.Parts<Runnable> {
-    private final Action.Requires<Runnable> bridge;
+    public Callable call();
     
-    private final Action<Runnable> implementation;
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public CycleAlert finishedCycle();
+    
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public ITakeThreads threads();
+  }
+  
+  public interface Parts {
+  }
+  
+  public static class ComponentImpl implements Launcher.Component, Launcher.Parts {
+    private final Launcher.Requires bridge;
+    
+    private final Launcher implementation;
     
     public void start() {
       this.implementation.start();
@@ -41,19 +49,37 @@ public abstract class Action<Runnable> {
       
     }
     
-    private void init_action() {
-      assert this.action == null: "This is a bug.";
-      this.action = this.implementation.make_action();
-      if (this.action == null) {
-      	throw new RuntimeException("make_action() in clrobots.Action<Runnable> should not return null.");
+    private void init_call() {
+      assert this.call == null: "This is a bug.";
+      this.call = this.implementation.make_call();
+      if (this.call == null) {
+      	throw new RuntimeException("make_call() in clrobots.Launcher should not return null.");
+      }
+    }
+    
+    private void init_finishedCycle() {
+      assert this.finishedCycle == null: "This is a bug.";
+      this.finishedCycle = this.implementation.make_finishedCycle();
+      if (this.finishedCycle == null) {
+      	throw new RuntimeException("make_finishedCycle() in clrobots.Launcher should not return null.");
+      }
+    }
+    
+    private void init_threads() {
+      assert this.threads == null: "This is a bug.";
+      this.threads = this.implementation.make_threads();
+      if (this.threads == null) {
+      	throw new RuntimeException("make_threads() in clrobots.Launcher should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_action();
+      init_call();
+      init_finishedCycle();
+      init_threads();
     }
     
-    public ComponentImpl(final Action<Runnable> implem, final Action.Requires<Runnable> b, final boolean doInits) {
+    public ComponentImpl(final Launcher implem, final Launcher.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -69,10 +95,22 @@ public abstract class Action<Runnable> {
       }
     }
     
-    private IAction action;
+    private Callable call;
     
-    public IAction action() {
-      return this.action;
+    public Callable call() {
+      return this.call;
+    }
+    
+    private CycleAlert finishedCycle;
+    
+    public CycleAlert finishedCycle() {
+      return this.finishedCycle;
+    }
+    
+    private ITakeThreads threads;
+    
+    public ITakeThreads threads() {
+      return this.threads;
     }
   }
   
@@ -90,7 +128,7 @@ public abstract class Action<Runnable> {
    */
   private boolean started = false;;
   
-  private Action.ComponentImpl<Runnable> selfComponent;
+  private Launcher.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -107,7 +145,7 @@ public abstract class Action<Runnable> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Action.Provides<Runnable> provides() {
+  protected Launcher.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -120,13 +158,27 @@ public abstract class Action<Runnable> {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IAction make_action();
+  protected abstract Callable make_call();
+  
+  /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract CycleAlert make_finishedCycle();
+  
+  /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract ITakeThreads make_threads();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Action.Requires<Runnable> requires() {
+  protected Launcher.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -138,7 +190,7 @@ public abstract class Action<Runnable> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Action.Parts<Runnable> parts() {
+  protected Launcher.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -150,15 +202,23 @@ public abstract class Action<Runnable> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Action.Component<Runnable> _newComponent(final Action.Requires<Runnable> b, final boolean start) {
+  public synchronized Launcher.Component _newComponent(final Launcher.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of Action has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Launcher has already been used to create a component, use another one.");
     }
     this.init = true;
-    Action.ComponentImpl<Runnable>  _comp = new Action.ComponentImpl<Runnable>(this, b, true);
+    Launcher.ComponentImpl  _comp = new Launcher.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
     return _comp;
+  }
+  
+  /**
+   * Use to instantiate a component from this implementation.
+   * 
+   */
+  public Launcher.Component newComponent() {
+    return this._newComponent(new Launcher.Requires() {}, true);
   }
 }

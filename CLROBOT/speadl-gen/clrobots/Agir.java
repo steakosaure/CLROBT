@@ -1,36 +1,36 @@
 package clrobots;
 
-import clrobots.interfaces.IAction;
-import clrobots.interfaces.IDecision;
+import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Decision<Runnable> {
-  public interface Requires<Runnable> {
+public abstract class Agir {
+  public interface Requires {
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
-    public IAction action();
+    public CycleAlert finishedCycle();
   }
   
-  public interface Component<Runnable> extends Decision.Provides<Runnable> {
+  public interface Component extends Agir.Provides {
   }
   
-  public interface Provides<Runnable> {
+  public interface Provides {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public IDecision decision();
+    public Do action();
   }
   
-  public interface Parts<Runnable> {
+  public interface Parts {
   }
   
-  public static class ComponentImpl<Runnable> implements Decision.Component<Runnable>, Decision.Parts<Runnable> {
-    private final Decision.Requires<Runnable> bridge;
+  public static class ComponentImpl implements Agir.Component, Agir.Parts {
+    private final Agir.Requires bridge;
     
-    private final Decision<Runnable> implementation;
+    private final Agir implementation;
     
     public void start() {
       this.implementation.start();
@@ -41,19 +41,19 @@ public abstract class Decision<Runnable> {
       
     }
     
-    private void init_decision() {
-      assert this.decision == null: "This is a bug.";
-      this.decision = this.implementation.make_decision();
-      if (this.decision == null) {
-      	throw new RuntimeException("make_decision() in clrobots.Decision<Runnable> should not return null.");
+    private void init_action() {
+      assert this.action == null: "This is a bug.";
+      this.action = this.implementation.make_action();
+      if (this.action == null) {
+      	throw new RuntimeException("make_action() in clrobots.Agir should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_decision();
+      init_action();
     }
     
-    public ComponentImpl(final Decision<Runnable> implem, final Decision.Requires<Runnable> b, final boolean doInits) {
+    public ComponentImpl(final Agir implem, final Agir.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -69,10 +69,10 @@ public abstract class Decision<Runnable> {
       }
     }
     
-    private IDecision decision;
+    private Do action;
     
-    public IDecision decision() {
-      return this.decision;
+    public Do action() {
+      return this.action;
     }
   }
   
@@ -90,7 +90,7 @@ public abstract class Decision<Runnable> {
    */
   private boolean started = false;;
   
-  private Decision.ComponentImpl<Runnable> selfComponent;
+  private Agir.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -107,7 +107,7 @@ public abstract class Decision<Runnable> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Decision.Provides<Runnable> provides() {
+  protected Agir.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -120,13 +120,13 @@ public abstract class Decision<Runnable> {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IDecision make_decision();
+  protected abstract Do make_action();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Decision.Requires<Runnable> requires() {
+  protected Agir.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -138,7 +138,7 @@ public abstract class Decision<Runnable> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Decision.Parts<Runnable> parts() {
+  protected Agir.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -150,12 +150,12 @@ public abstract class Decision<Runnable> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Decision.Component<Runnable> _newComponent(final Decision.Requires<Runnable> b, final boolean start) {
+  public synchronized Agir.Component _newComponent(final Agir.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of Decision has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Agir has already been used to create a component, use another one.");
     }
     this.init = true;
-    Decision.ComponentImpl<Runnable>  _comp = new Decision.ComponentImpl<Runnable>(this, b, true);
+    Agir.ComponentImpl  _comp = new Agir.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
