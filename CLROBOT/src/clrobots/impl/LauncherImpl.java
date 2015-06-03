@@ -19,16 +19,14 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 	private int nbFinishedCycles = 0;
 	private ExecutorService execService = null;
 	boolean stop = false;
+	private int speed = 1000;
 
 	@Override
 	public void run() {
-		System.out.println("Threads = "+Thread.activeCount());
 
 		synchronized(robots){
 			nbRobotsPerCycle = robots.size();
 			System.out.println();
-			System.out.println("-----------------------------------------------------------------------------");
-			System.out.println("Nb agents par cycle = "+nbRobotsPerCycle);
 			System.out.println("RUN!!!!!  "+ robots.size());
 
 
@@ -39,9 +37,9 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 						execService.execute(e);
 				}
 
-			}}
+			}
+		}
 
-		System.out.println("End boucles");
 		//	this.requires().lancer().doIt();
 	}
 
@@ -61,7 +59,6 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 				execService.shutdown();
 
 			execService = Executors.newFixedThreadPool(robots.size() + 1);
-			System.out.println("SIZE : " + this.robots.size()+" NEW SIZE : " + robots.size());
 
 			if(this.robots.size() == 0 && !stop) {
 				this.robots.clear();
@@ -85,7 +82,7 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 			System.out.println("Run cycles!");
 			nbFinishedCycles = 0;
 			try {
-				Thread.sleep(3000);
+				Thread.sleep(speed);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

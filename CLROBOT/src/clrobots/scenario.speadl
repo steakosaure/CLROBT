@@ -2,6 +2,7 @@ import clrobots.interfaces.Callable
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
 import clrobots.interfaces.ITakeThreads
+import java.awt.Color
 
 namespace clrobots{
 	
@@ -21,7 +22,34 @@ namespace clrobots{
 		provides threads: ITakeThreads 
 	}
 	
+	ecosystem ScenarioEco{
+		part ecoAE: EcoRobot{
+			bind threads to launcher.threads
+		}
+		part fw: Forward[CycleAlert]{
+			bind i to launcher.finishedCycle
+		}
+		
+		part launcher: Launcher
+		
+		
+		species DynamicAssembly(id: String, color: Color){
+			use agentE: ecoAE.Robot(id, color){
+				bind finishedCycle to aFW.a
+			}
+			use aFW: fw.Agent
+		}
+	}
+	
 
+	ecosystem Forward[I]{
+		 species Agent{
+		 	
+		 	provides a: I
+		 }
+		 
+		 requires i: I
+	}
 		
 	
 }
