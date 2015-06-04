@@ -1,13 +1,16 @@
 import clrobots.interfaces.IEnvInfos
 import clrobots.interfaces.Igui
 import clrobots.interfaces.Iinteragir
+import environnement.interfaces.IEnvInit
+import ui.interfaces.IUpdateUi
 
 namespace clrobots{
 	//Composant contenant l'environnement 
 	component Environnement {
-		provides gui : Igui
+		requires updateUi: IUpdateUi
 		provides interagir : Iinteragir
 		provides envInfos: IEnvInfos
+		provides envInit: IEnvInit
 	}
 	
 }

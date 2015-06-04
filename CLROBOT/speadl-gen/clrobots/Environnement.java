@@ -1,24 +1,24 @@
 package clrobots;
 
 import clrobots.interfaces.IEnvInfos;
-import clrobots.interfaces.Igui;
 import clrobots.interfaces.Iinteragir;
+import environnement.interfaces.IEnvInit;
+import ui.interfaces.IUpdateUi;
 
 @SuppressWarnings("all")
 public abstract class Environnement {
   public interface Requires {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public IUpdateUi updateUi();
   }
   
   public interface Component extends Environnement.Provides {
   }
   
   public interface Provides {
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public Igui gui();
-    
     /**
      * This can be called to access the provided port.
      * 
@@ -30,6 +30,12 @@ public abstract class Environnement {
      * 
      */
     public IEnvInfos envInfos();
+    
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public IEnvInit envInit();
   }
   
   public interface Parts {
@@ -49,14 +55,6 @@ public abstract class Environnement {
       
     }
     
-    private void init_gui() {
-      assert this.gui == null: "This is a bug.";
-      this.gui = this.implementation.make_gui();
-      if (this.gui == null) {
-      	throw new RuntimeException("make_gui() in clrobots.Environnement should not return null.");
-      }
-    }
-    
     private void init_interagir() {
       assert this.interagir == null: "This is a bug.";
       this.interagir = this.implementation.make_interagir();
@@ -73,10 +71,18 @@ public abstract class Environnement {
       }
     }
     
+    private void init_envInit() {
+      assert this.envInit == null: "This is a bug.";
+      this.envInit = this.implementation.make_envInit();
+      if (this.envInit == null) {
+      	throw new RuntimeException("make_envInit() in clrobots.Environnement should not return null.");
+      }
+    }
+    
     protected void initProvidedPorts() {
-      init_gui();
       init_interagir();
       init_envInfos();
+      init_envInit();
     }
     
     public ComponentImpl(final Environnement implem, final Environnement.Requires b, final boolean doInits) {
@@ -95,12 +101,6 @@ public abstract class Environnement {
       }
     }
     
-    private Igui gui;
-    
-    public Igui gui() {
-      return this.gui;
-    }
-    
     private Iinteragir interagir;
     
     public Iinteragir interagir() {
@@ -111,6 +111,12 @@ public abstract class Environnement {
     
     public IEnvInfos envInfos() {
       return this.envInfos;
+    }
+    
+    private IEnvInit envInit;
+    
+    public IEnvInit envInit() {
+      return this.envInit;
     }
   }
   
@@ -158,13 +164,6 @@ public abstract class Environnement {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract Igui make_gui();
-  
-  /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
   protected abstract Iinteragir make_interagir();
   
   /**
@@ -173,6 +172,13 @@ public abstract class Environnement {
    * 
    */
   protected abstract IEnvInfos make_envInfos();
+  
+  /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract IEnvInit make_envInit();
   
   /**
    * This can be called by the implementation to access the required ports.
@@ -212,13 +218,5 @@ public abstract class Environnement {
     	_comp.start();
     }
     return _comp;
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public Environnement.Component newComponent() {
-    return this._newComponent(new Environnement.Requires() {}, true);
   }
 }

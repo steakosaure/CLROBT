@@ -13,22 +13,37 @@ import clrobots.Agir;
 import clrobots.Decider;
 import clrobots.EcoRobotAgents;
 import clrobots.Percevoir;
+import clrobots.interfaces.ICreateRobot;
 
-public class EcoRobotImpl extends EcoRobotAgents {
+public class EcoRobotImpl extends EcoRobotAgents implements ICreateRobot {
 
 	private Map<String,Runnable> robotsMap;
-	private List<Runnable> listRunnable;
+	private Map<String, Robot> listRobot;
 	
 	public EcoRobotImpl() {
 		robotsMap = new HashMap<String, Runnable>();
-		listRunnable = new ArrayList<Runnable>();
+		listRobot = new HashMap<String, Robot>();
 	}
 
 	@Override
 	protected Robot make_Robot(String id, Color color) {
 		RobotImpl robot = new RobotImpl(id, color);
 		robotsMap.put(id, robot);
+		listRobot.put(id, robot);
 		return robot;
+	}
+	
+
+	@Override
+	protected ICreateRobot make_createRobot() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void createNewRobot(Color color) {
+		
+		
 	}
 	
 	private class RobotImpl extends Robot implements Runnable{
@@ -73,5 +88,6 @@ public class EcoRobotImpl extends EcoRobotAgents {
 		}
 		
 	}
+
 
 }

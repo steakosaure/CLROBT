@@ -5,6 +5,7 @@ import clrobots.Decider;
 import clrobots.Percevoir;
 import clrobots.interfaces.CycleAlert;
 import clrobots.interfaces.Do;
+import clrobots.interfaces.ICreateRobot;
 import clrobots.interfaces.ITakeThreads;
 import java.awt.Color;
 
@@ -22,6 +23,11 @@ public abstract class EcoRobotAgents {
   }
   
   public interface Provides {
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public ICreateRobot createRobot();
   }
   
   public interface Parts {
@@ -41,8 +47,16 @@ public abstract class EcoRobotAgents {
       
     }
     
+    private void init_createRobot() {
+      assert this.createRobot == null: "This is a bug.";
+      this.createRobot = this.implementation.make_createRobot();
+      if (this.createRobot == null) {
+      	throw new RuntimeException("make_createRobot() in clrobots.EcoRobotAgents should not return null.");
+      }
+    }
+    
     protected void initProvidedPorts() {
-      
+      init_createRobot();
     }
     
     public ComponentImpl(final EcoRobotAgents implem, final EcoRobotAgents.Requires b, final boolean doInits) {
@@ -59,6 +73,12 @@ public abstract class EcoRobotAgents {
       	initParts();
       	initProvidedPorts();
       }
+    }
+    
+    private ICreateRobot createRobot;
+    
+    public ICreateRobot createRobot() {
+      return this.createRobot;
     }
   }
   
@@ -395,6 +415,13 @@ public abstract class EcoRobotAgents {
     }
     return this.selfComponent;
   }
+  
+  /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract ICreateRobot make_createRobot();
   
   /**
    * This can be called by the implementation to access the required ports.

@@ -1,9 +1,8 @@
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
-import clrobots.interfaces.IEnvInfos
+import clrobots.interfaces.ICreateRobot
 import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
-import clrobots.interfaces.Iinteragir
 import java.awt.Color
 
 namespace clrobots{
@@ -18,6 +17,7 @@ namespace clrobots{
 	ecosystem EcoRobotAgents{
 		
 			requires threads: ITakeThreads
+			provides createRobot: ICreateRobot
 			//requires updateRobotsMap: UpdateRobotsList
 			
 			species Robot(id: String, color: Color){
