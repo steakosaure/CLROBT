@@ -1,6 +1,6 @@
 package clrobots;
 
-import clrobots.EcoRobots;
+import clrobots.EcoRobotAgents;
 import clrobots.Forward;
 import clrobots.Launcher;
 import clrobots.interfaces.CycleAlert;
@@ -24,7 +24,7 @@ public abstract class ScenarioEco {
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public EcoRobots.Component ecoAE();
+    public EcoRobotAgents.Component ecoAE();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
@@ -48,7 +48,7 @@ public abstract class ScenarioEco {
     
     public void start() {
       assert this.ecoAE != null: "This is a bug.";
-      ((EcoRobots.ComponentImpl) this.ecoAE).start();
+      ((EcoRobotAgents.ComponentImpl) this.ecoAE).start();
       assert this.fw != null: "This is a bug.";
       ((Forward.ComponentImpl<CycleAlert>) this.fw).start();
       assert this.launcher != null: "This is a bug.";
@@ -116,17 +116,17 @@ public abstract class ScenarioEco {
       }
     }
     
-    private EcoRobots.Component ecoAE;
+    private EcoRobotAgents.Component ecoAE;
     
-    private EcoRobots implem_ecoAE;
+    private EcoRobotAgents implem_ecoAE;
     
-    private final class BridgeImpl_ecoAE implements EcoRobots.Requires {
+    private final class BridgeImpl_ecoAE implements EcoRobotAgents.Requires {
       public final ITakeThreads threads() {
         return ScenarioEco.ComponentImpl.this.launcher().threads();
       }
     }
     
-    public final EcoRobots.Component ecoAE() {
+    public final EcoRobotAgents.Component ecoAE() {
       return this.ecoAE;
     }
     
@@ -172,7 +172,7 @@ public abstract class ScenarioEco {
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public EcoRobots.Robot.Component agentE();
+      public EcoRobotAgents.Robot.Component agentE();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
@@ -189,7 +189,7 @@ public abstract class ScenarioEco {
       
       public void start() {
         assert this.agentE != null: "This is a bug.";
-        ((EcoRobots.Robot.ComponentImpl) this.agentE).start();
+        ((EcoRobotAgents.Robot.ComponentImpl) this.agentE).start();
         assert this.aFW != null: "This is a bug.";
         ((Forward.Agent.ComponentImpl<CycleAlert>) this.aFW).start();
         this.implementation.start();
@@ -235,15 +235,15 @@ public abstract class ScenarioEco {
         }
       }
       
-      private EcoRobots.Robot.Component agentE;
+      private EcoRobotAgents.Robot.Component agentE;
       
-      private final class BridgeImpl_ecoAE_agentE implements EcoRobots.Robot.Requires {
+      private final class BridgeImpl_ecoAE_agentE implements EcoRobotAgents.Robot.Requires {
         public final CycleAlert finishedCycle() {
           return ScenarioEco.DynamicAssembly.ComponentImpl.this.aFW().a();
         }
       }
       
-      public final EcoRobots.Robot.Component agentE() {
+      public final EcoRobotAgents.Robot.Component agentE() {
         return this.agentE;
       }
       
@@ -320,7 +320,7 @@ public abstract class ScenarioEco {
       return this.selfComponent;
     }
     
-    private EcoRobots.Robot use_agentE;
+    private EcoRobotAgents.Robot use_agentE;
     
     private Forward.Agent<CycleAlert> use_aFW;
     
@@ -438,7 +438,7 @@ public abstract class ScenarioEco {
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract EcoRobots make_ecoAE();
+  protected abstract EcoRobotAgents make_ecoAE();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.

@@ -1,10 +1,6 @@
-import clrobots.interfaces.CycleAlert
-import clrobots.interfaces.Do
 import clrobots.interfaces.IEnvInfos
-import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
 import clrobots.interfaces.Iinteragir
-import java.awt.Color
 
 namespace clrobots{
 	//Composant contenant l'environnement 

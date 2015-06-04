@@ -23,7 +23,7 @@ namespace clrobots{
 	}
 	
 	ecosystem ScenarioEco{
-		part ecoAE: EcoRobots{
+		part ecoAE: EcoRobotAgents{
 			bind threads to launcher.threads
 		}
 		part fw: Forward[CycleAlert]{
@@ -39,6 +39,15 @@ namespace clrobots{
 			}
 			use aFW: fw.Agent
 		}
+	}
+	
+	ecosystem Forward[I]{
+		 species Agent{
+		 	
+		 	provides a: I
+		 }
+		 
+		 requires i: I
 	}
 	
 

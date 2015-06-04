@@ -9,7 +9,7 @@ import clrobots.interfaces.ITakeThreads;
 import java.awt.Color;
 
 @SuppressWarnings("all")
-public abstract class EcoRobots {
+public abstract class EcoRobotAgents {
   public interface Requires {
     /**
      * This can be called by the implementation to access this required port.
@@ -18,7 +18,7 @@ public abstract class EcoRobots {
     public ITakeThreads threads();
   }
   
-  public interface Component extends EcoRobots.Provides {
+  public interface Component extends EcoRobotAgents.Provides {
   }
   
   public interface Provides {
@@ -27,10 +27,10 @@ public abstract class EcoRobots {
   public interface Parts {
   }
   
-  public static class ComponentImpl implements EcoRobots.Component, EcoRobots.Parts {
-    private final EcoRobots.Requires bridge;
+  public static class ComponentImpl implements EcoRobotAgents.Component, EcoRobotAgents.Parts {
+    private final EcoRobotAgents.Requires bridge;
     
-    private final EcoRobots implementation;
+    private final EcoRobotAgents implementation;
     
     public void start() {
       this.implementation.start();
@@ -45,7 +45,7 @@ public abstract class EcoRobots {
       
     }
     
-    public ComponentImpl(final EcoRobots implem, final EcoRobots.Requires b, final boolean doInits) {
+    public ComponentImpl(final EcoRobotAgents implem, final EcoRobotAgents.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -71,7 +71,7 @@ public abstract class EcoRobots {
       public CycleAlert finishedCycle();
     }
     
-    public interface Component extends EcoRobots.Robot.Provides {
+    public interface Component extends EcoRobotAgents.Robot.Provides {
     }
     
     public interface Provides {
@@ -105,10 +105,10 @@ public abstract class EcoRobots {
       public Agir.Component agir();
     }
     
-    public static class ComponentImpl implements EcoRobots.Robot.Component, EcoRobots.Robot.Parts {
-      private final EcoRobots.Robot.Requires bridge;
+    public static class ComponentImpl implements EcoRobotAgents.Robot.Component, EcoRobotAgents.Robot.Parts {
+      private final EcoRobotAgents.Robot.Requires bridge;
       
-      private final EcoRobots.Robot implementation;
+      private final EcoRobotAgents.Robot implementation;
       
       public void start() {
         assert this.percevoir != null: "This is a bug.";
@@ -126,7 +126,7 @@ public abstract class EcoRobots {
         assert this.implem_percevoir == null: "This is a bug.";
         this.implem_percevoir = this.implementation.make_percevoir();
         if (this.implem_percevoir == null) {
-        	throw new RuntimeException("make_percevoir() in clrobots.EcoRobots$Robot should not return null.");
+        	throw new RuntimeException("make_percevoir() in clrobots.EcoRobotAgents$Robot should not return null.");
         }
         this.percevoir = this.implem_percevoir._newComponent(new BridgeImpl_percevoir(), false);
         
@@ -137,7 +137,7 @@ public abstract class EcoRobots {
         assert this.implem_decider == null: "This is a bug.";
         this.implem_decider = this.implementation.make_decider();
         if (this.implem_decider == null) {
-        	throw new RuntimeException("make_decider() in clrobots.EcoRobots$Robot should not return null.");
+        	throw new RuntimeException("make_decider() in clrobots.EcoRobotAgents$Robot should not return null.");
         }
         this.decider = this.implem_decider._newComponent(new BridgeImpl_decider(), false);
         
@@ -148,7 +148,7 @@ public abstract class EcoRobots {
         assert this.implem_agir == null: "This is a bug.";
         this.implem_agir = this.implementation.make_agir();
         if (this.implem_agir == null) {
-        	throw new RuntimeException("make_agir() in clrobots.EcoRobots$Robot should not return null.");
+        	throw new RuntimeException("make_agir() in clrobots.EcoRobotAgents$Robot should not return null.");
         }
         this.agir = this.implem_agir._newComponent(new BridgeImpl_agir(), false);
         
@@ -164,7 +164,7 @@ public abstract class EcoRobots {
         
       }
       
-      public ComponentImpl(final EcoRobots.Robot implem, final EcoRobots.Robot.Requires b, final boolean doInits) {
+      public ComponentImpl(final EcoRobotAgents.Robot implem, final EcoRobotAgents.Robot.Requires b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -190,7 +190,7 @@ public abstract class EcoRobots {
       
       private final class BridgeImpl_percevoir implements Percevoir.Requires {
         public final Do decision() {
-          return EcoRobots.Robot.ComponentImpl.this.decider().decision();
+          return EcoRobotAgents.Robot.ComponentImpl.this.decider().decision();
         }
       }
       
@@ -204,7 +204,7 @@ public abstract class EcoRobots {
       
       private final class BridgeImpl_decider implements Decider.Requires {
         public final Do action() {
-          return EcoRobots.Robot.ComponentImpl.this.agir().action();
+          return EcoRobotAgents.Robot.ComponentImpl.this.agir().action();
         }
       }
       
@@ -218,7 +218,7 @@ public abstract class EcoRobots {
       
       private final class BridgeImpl_agir implements Agir.Requires {
         public final CycleAlert finishedCycle() {
-          return EcoRobots.Robot.ComponentImpl.this.bridge.finishedCycle();
+          return EcoRobotAgents.Robot.ComponentImpl.this.bridge.finishedCycle();
         }
       }
       
@@ -241,7 +241,7 @@ public abstract class EcoRobots {
      */
     private boolean started = false;;
     
-    private EcoRobots.Robot.ComponentImpl selfComponent;
+    private EcoRobotAgents.Robot.ComponentImpl selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -258,7 +258,7 @@ public abstract class EcoRobots {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoRobots.Robot.Provides provides() {
+    protected EcoRobotAgents.Robot.Provides provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -270,7 +270,7 @@ public abstract class EcoRobots {
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoRobots.Robot.Requires requires() {
+    protected EcoRobotAgents.Robot.Requires requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -282,7 +282,7 @@ public abstract class EcoRobots {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoRobots.Robot.Parts parts() {
+    protected EcoRobotAgents.Robot.Parts parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -315,25 +315,25 @@ public abstract class EcoRobots {
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoRobots.Robot.Component _newComponent(final EcoRobots.Robot.Requires b, final boolean start) {
+    public synchronized EcoRobotAgents.Robot.Component _newComponent(final EcoRobotAgents.Robot.Requires b, final boolean start) {
       if (this.init) {
       	throw new RuntimeException("This instance of Robot has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoRobots.Robot.ComponentImpl  _comp = new EcoRobots.Robot.ComponentImpl(this, b, true);
+      EcoRobotAgents.Robot.ComponentImpl  _comp = new EcoRobotAgents.Robot.ComponentImpl(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoRobots.ComponentImpl ecosystemComponent;
+    private EcoRobotAgents.ComponentImpl ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoRobots.Provides eco_provides() {
+    protected EcoRobotAgents.Provides eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -342,7 +342,7 @@ public abstract class EcoRobots {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoRobots.Requires eco_requires() {
+    protected EcoRobotAgents.Requires eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -351,7 +351,7 @@ public abstract class EcoRobots {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoRobots.Parts eco_parts() {
+    protected EcoRobotAgents.Parts eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -371,7 +371,7 @@ public abstract class EcoRobots {
    */
   private boolean started = false;;
   
-  private EcoRobots.ComponentImpl selfComponent;
+  private EcoRobotAgents.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -388,7 +388,7 @@ public abstract class EcoRobots {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoRobots.Provides provides() {
+  protected EcoRobotAgents.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -400,7 +400,7 @@ public abstract class EcoRobots {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoRobots.Requires requires() {
+  protected EcoRobotAgents.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -412,7 +412,7 @@ public abstract class EcoRobots {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoRobots.Parts parts() {
+  protected EcoRobotAgents.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -424,12 +424,12 @@ public abstract class EcoRobots {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoRobots.Component _newComponent(final EcoRobots.Requires b, final boolean start) {
+  public synchronized EcoRobotAgents.Component _newComponent(final EcoRobotAgents.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of EcoRobots has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of EcoRobotAgents has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoRobots.ComponentImpl  _comp = new EcoRobots.ComponentImpl(this, b, true);
+    EcoRobotAgents.ComponentImpl  _comp = new EcoRobotAgents.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -440,16 +440,16 @@ public abstract class EcoRobots {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoRobots.Robot make_Robot(final String id, final Color color);
+  protected abstract EcoRobotAgents.Robot make_Robot(final String id, final Color color);
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoRobots.Robot _createImplementationOfRobot(final String id, final Color color) {
-    EcoRobots.Robot implem = make_Robot(id,color);
+  public EcoRobotAgents.Robot _createImplementationOfRobot(final String id, final Color color) {
+    EcoRobotAgents.Robot implem = make_Robot(id,color);
     if (implem == null) {
-    	throw new RuntimeException("make_Robot() in clrobots.EcoRobots should not return null.");
+    	throw new RuntimeException("make_Robot() in clrobots.EcoRobotAgents should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";

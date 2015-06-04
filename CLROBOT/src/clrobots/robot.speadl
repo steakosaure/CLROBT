@@ -15,7 +15,7 @@ namespace clrobots{
 	}
 	
 	
-	ecosystem EcoRobots{
+	ecosystem EcoRobotAgents{
 		
 			requires threads: ITakeThreads
 			//requires updateRobotsMap: UpdateRobotsList
@@ -60,14 +60,7 @@ namespace clrobots{
 		//requires interagir : Iinteragir
 	}
 	
-	ecosystem Forward[I]{
-		 species Agent{
-		 	
-		 	provides a: I
-		 }
-		 
-		 requires i: I
-	}
+	
 	
 	
 }
