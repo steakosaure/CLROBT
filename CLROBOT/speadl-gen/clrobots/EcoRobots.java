@@ -1,31 +1,36 @@
 package clrobots;
 
-import clrobots.interfaces.ICreateNid;
-import clrobots.interfaces.INidInfo;
+import clrobots.Agir;
+import clrobots.Decider;
+import clrobots.Percevoir;
+import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.Do;
+import clrobots.interfaces.ITakeThreads;
+import java.awt.Color;
 
 @SuppressWarnings("all")
-public abstract class EcoNid {
+public abstract class EcoRobots {
   public interface Requires {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public ITakeThreads threads();
   }
   
-  public interface Component extends EcoNid.Provides {
+  public interface Component extends EcoRobots.Provides {
   }
   
   public interface Provides {
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public ICreateNid create();
   }
   
   public interface Parts {
   }
   
-  public static class ComponentImpl implements EcoNid.Component, EcoNid.Parts {
-    private final EcoNid.Requires bridge;
+  public static class ComponentImpl implements EcoRobots.Component, EcoRobots.Parts {
+    private final EcoRobots.Requires bridge;
     
-    private final EcoNid implementation;
+    private final EcoRobots implementation;
     
     public void start() {
       this.implementation.start();
@@ -36,19 +41,11 @@ public abstract class EcoNid {
       
     }
     
-    private void init_create() {
-      assert this.create == null: "This is a bug.";
-      this.create = this.implementation.make_create();
-      if (this.create == null) {
-      	throw new RuntimeException("make_create() in clrobots.EcoNid should not return null.");
-      }
-    }
-    
     protected void initProvidedPorts() {
-      init_create();
+      
     }
     
-    public ComponentImpl(final EcoNid implem, final EcoNid.Requires b, final boolean doInits) {
+    public ComponentImpl(final EcoRobots implem, final EcoRobots.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -63,19 +60,18 @@ public abstract class EcoNid {
       	initProvidedPorts();
       }
     }
-    
-    private ICreateNid create;
-    
-    public ICreateNid create() {
-      return this.create;
-    }
   }
   
-  public static abstract class Nid {
+  public static abstract class Robot {
     public interface Requires {
+      /**
+       * This can be called by the implementation to access this required port.
+       * 
+       */
+      public CycleAlert finishedCycle();
     }
     
-    public interface Component extends EcoNid.Nid.Provides {
+    public interface Component extends EcoRobots.Robot.Provides {
     }
     
     public interface Provides {
@@ -83,39 +79,92 @@ public abstract class EcoNid {
        * This can be called to access the provided port.
        * 
        */
-      public INidInfo nidinfo();
+      public Do launchCycle();
     }
     
     public interface Parts {
+      /**
+       * This can be called by the implementation to access the part and its provided ports.
+       * It will be initialized after the required ports are initialized and before the provided ports are initialized.
+       * 
+       */
+      public Percevoir.Component percevoir();
+      
+      /**
+       * This can be called by the implementation to access the part and its provided ports.
+       * It will be initialized after the required ports are initialized and before the provided ports are initialized.
+       * 
+       */
+      public Decider.Component decider();
+      
+      /**
+       * This can be called by the implementation to access the part and its provided ports.
+       * It will be initialized after the required ports are initialized and before the provided ports are initialized.
+       * 
+       */
+      public Agir.Component agir();
     }
     
-    public static class ComponentImpl implements EcoNid.Nid.Component, EcoNid.Nid.Parts {
-      private final EcoNid.Nid.Requires bridge;
+    public static class ComponentImpl implements EcoRobots.Robot.Component, EcoRobots.Robot.Parts {
+      private final EcoRobots.Robot.Requires bridge;
       
-      private final EcoNid.Nid implementation;
+      private final EcoRobots.Robot implementation;
       
       public void start() {
+        assert this.percevoir != null: "This is a bug.";
+        ((Percevoir.ComponentImpl) this.percevoir).start();
+        assert this.decider != null: "This is a bug.";
+        ((Decider.ComponentImpl) this.decider).start();
+        assert this.agir != null: "This is a bug.";
+        ((Agir.ComponentImpl) this.agir).start();
         this.implementation.start();
         this.implementation.started = true;
       }
       
-      protected void initParts() {
+      private void init_percevoir() {
+        assert this.percevoir == null: "This is a bug.";
+        assert this.implem_percevoir == null: "This is a bug.";
+        this.implem_percevoir = this.implementation.make_percevoir();
+        if (this.implem_percevoir == null) {
+        	throw new RuntimeException("make_percevoir() in clrobots.EcoRobots$Robot should not return null.");
+        }
+        this.percevoir = this.implem_percevoir._newComponent(new BridgeImpl_percevoir(), false);
         
       }
       
-      private void init_nidinfo() {
-        assert this.nidinfo == null: "This is a bug.";
-        this.nidinfo = this.implementation.make_nidinfo();
-        if (this.nidinfo == null) {
-        	throw new RuntimeException("make_nidinfo() in clrobots.EcoNid$Nid should not return null.");
+      private void init_decider() {
+        assert this.decider == null: "This is a bug.";
+        assert this.implem_decider == null: "This is a bug.";
+        this.implem_decider = this.implementation.make_decider();
+        if (this.implem_decider == null) {
+        	throw new RuntimeException("make_decider() in clrobots.EcoRobots$Robot should not return null.");
         }
+        this.decider = this.implem_decider._newComponent(new BridgeImpl_decider(), false);
+        
+      }
+      
+      private void init_agir() {
+        assert this.agir == null: "This is a bug.";
+        assert this.implem_agir == null: "This is a bug.";
+        this.implem_agir = this.implementation.make_agir();
+        if (this.implem_agir == null) {
+        	throw new RuntimeException("make_agir() in clrobots.EcoRobots$Robot should not return null.");
+        }
+        this.agir = this.implem_agir._newComponent(new BridgeImpl_agir(), false);
+        
+      }
+      
+      protected void initParts() {
+        init_percevoir();
+        init_decider();
+        init_agir();
       }
       
       protected void initProvidedPorts() {
-        init_nidinfo();
+        
       }
       
-      public ComponentImpl(final EcoNid.Nid implem, final EcoNid.Nid.Requires b, final boolean doInits) {
+      public ComponentImpl(final EcoRobots.Robot implem, final EcoRobots.Robot.Requires b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -131,10 +180,50 @@ public abstract class EcoNid {
         }
       }
       
-      private INidInfo nidinfo;
+      public Do launchCycle() {
+        return this.percevoir().perception();
+      }
       
-      public INidInfo nidinfo() {
-        return this.nidinfo;
+      private Percevoir.Component percevoir;
+      
+      private Percevoir implem_percevoir;
+      
+      private final class BridgeImpl_percevoir implements Percevoir.Requires {
+        public final Do decision() {
+          return EcoRobots.Robot.ComponentImpl.this.decider().decision();
+        }
+      }
+      
+      public final Percevoir.Component percevoir() {
+        return this.percevoir;
+      }
+      
+      private Decider.Component decider;
+      
+      private Decider implem_decider;
+      
+      private final class BridgeImpl_decider implements Decider.Requires {
+        public final Do action() {
+          return EcoRobots.Robot.ComponentImpl.this.agir().action();
+        }
+      }
+      
+      public final Decider.Component decider() {
+        return this.decider;
+      }
+      
+      private Agir.Component agir;
+      
+      private Agir implem_agir;
+      
+      private final class BridgeImpl_agir implements Agir.Requires {
+        public final CycleAlert finishedCycle() {
+          return EcoRobots.Robot.ComponentImpl.this.bridge.finishedCycle();
+        }
+      }
+      
+      public final Agir.Component agir() {
+        return this.agir;
       }
     }
     
@@ -152,7 +241,7 @@ public abstract class EcoNid {
      */
     private boolean started = false;;
     
-    private EcoNid.Nid.ComponentImpl selfComponent;
+    private EcoRobots.Robot.ComponentImpl selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -169,7 +258,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoNid.Nid.Provides provides() {
+    protected EcoRobots.Robot.Provides provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -178,17 +267,10 @@ public abstract class EcoNid {
     }
     
     /**
-     * This should be overridden by the implementation to define the provided port.
-     * This will be called once during the construction of the component to initialize the port.
-     * 
-     */
-    protected abstract INidInfo make_nidinfo();
-    
-    /**
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoNid.Nid.Requires requires() {
+    protected EcoRobots.Robot.Requires requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -200,7 +282,7 @@ public abstract class EcoNid {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoNid.Nid.Parts parts() {
+    protected EcoRobots.Robot.Parts parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -209,28 +291,49 @@ public abstract class EcoNid {
     }
     
     /**
+     * This should be overridden by the implementation to define how to create this sub-component.
+     * This will be called once during the construction of the component to initialize this sub-component.
+     * 
+     */
+    protected abstract Percevoir make_percevoir();
+    
+    /**
+     * This should be overridden by the implementation to define how to create this sub-component.
+     * This will be called once during the construction of the component to initialize this sub-component.
+     * 
+     */
+    protected abstract Decider make_decider();
+    
+    /**
+     * This should be overridden by the implementation to define how to create this sub-component.
+     * This will be called once during the construction of the component to initialize this sub-component.
+     * 
+     */
+    protected abstract Agir make_agir();
+    
+    /**
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoNid.Nid.Component _newComponent(final EcoNid.Nid.Requires b, final boolean start) {
+    public synchronized EcoRobots.Robot.Component _newComponent(final EcoRobots.Robot.Requires b, final boolean start) {
       if (this.init) {
-      	throw new RuntimeException("This instance of Nid has already been used to create a component, use another one.");
+      	throw new RuntimeException("This instance of Robot has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoNid.Nid.ComponentImpl  _comp = new EcoNid.Nid.ComponentImpl(this, b, true);
+      EcoRobots.Robot.ComponentImpl  _comp = new EcoRobots.Robot.ComponentImpl(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoNid.ComponentImpl ecosystemComponent;
+    private EcoRobots.ComponentImpl ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoNid.Provides eco_provides() {
+    protected EcoRobots.Provides eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -239,7 +342,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoNid.Requires eco_requires() {
+    protected EcoRobots.Requires eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -248,7 +351,7 @@ public abstract class EcoNid {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoNid.Parts eco_parts() {
+    protected EcoRobots.Parts eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -268,7 +371,7 @@ public abstract class EcoNid {
    */
   private boolean started = false;;
   
-  private EcoNid.ComponentImpl selfComponent;
+  private EcoRobots.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -285,7 +388,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoNid.Provides provides() {
+  protected EcoRobots.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -294,17 +397,10 @@ public abstract class EcoNid {
   }
   
   /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract ICreateNid make_create();
-  
-  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoNid.Requires requires() {
+  protected EcoRobots.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -316,7 +412,7 @@ public abstract class EcoNid {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoNid.Parts parts() {
+  protected EcoRobots.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -328,12 +424,12 @@ public abstract class EcoNid {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoNid.Component _newComponent(final EcoNid.Requires b, final boolean start) {
+  public synchronized EcoRobots.Component _newComponent(final EcoRobots.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of EcoNid has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of EcoRobots has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoNid.ComponentImpl  _comp = new EcoNid.ComponentImpl(this, b, true);
+    EcoRobots.ComponentImpl  _comp = new EcoRobots.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -344,37 +440,20 @@ public abstract class EcoNid {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoNid.Nid make_Nid();
+  protected abstract EcoRobots.Robot make_Robot(final String id, final Color color);
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoNid.Nid _createImplementationOfNid() {
-    EcoNid.Nid implem = make_Nid();
+  public EcoRobots.Robot _createImplementationOfRobot(final String id, final Color color) {
+    EcoRobots.Robot implem = make_Robot(id,color);
     if (implem == null) {
-    	throw new RuntimeException("make_Nid() in clrobots.EcoNid should not return null.");
+    	throw new RuntimeException("make_Robot() in clrobots.EcoRobots should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
     implem.ecosystemComponent = this.selfComponent;
     return implem;
-  }
-  
-  /**
-   * This can be called to create an instance of the species from inside the implementation of the ecosystem.
-   * 
-   */
-  protected EcoNid.Nid.Component newNid() {
-    EcoNid.Nid _implem = _createImplementationOfNid();
-    return _implem._newComponent(new EcoNid.Nid.Requires() {},true);
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public EcoNid.Component newComponent() {
-    return this._newComponent(new EcoNid.Requires() {}, true);
   }
 }

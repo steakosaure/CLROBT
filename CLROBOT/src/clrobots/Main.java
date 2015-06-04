@@ -1,14 +1,11 @@
 package clrobots;
 
-import java.awt.Color;
-import java.util.List;
-
-import clrobots.impl.EcoBoiteImplTest;
+import clrobots.impl.ScenarioEcoImpl;
 
 public class Main {
 
 	public static void main(String[] args) {
-		test.EcoBoite.Component eco = new EcoBoiteImplTest().newComponent();
+		/*test.EcoBoite.Component eco = new EcoBoiteImplTest().newComponent();
 		eco.boiteCreate().createNewBox(Color.BLUE, 1, 5);
 		eco.boiteCreate().createNewBox(Color.RED, 9, 0);
 		eco.boiteCreate().createNewBox(Color.BLUE, 0, 5);
@@ -63,7 +60,9 @@ public class Main {
 	
 		for(Boite boite : boites){
 			System.out.println("("+boite.getPositionX()+","+boite.getPositionY()+") :" + boite.getCouleur());
-		}
+		}*/
+		
+		new ScenarioEcoImpl().newComponent();
 		
 	}
 

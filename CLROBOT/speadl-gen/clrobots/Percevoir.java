@@ -1,43 +1,35 @@
 package clrobots;
 
-import clrobots.interfaces.IDecision;
-import clrobots.interfaces.IEnvInfos;
-import clrobots.interfaces.IPerception;
+import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Perception<Runnable> {
-  public interface Requires<Runnable> {
+public abstract class Percevoir {
+  public interface Requires {
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
-    public IEnvInfos envInfos();
-    
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public IDecision decision();
+    public Do decision();
   }
   
-  public interface Component<Runnable> extends Perception.Provides<Runnable> {
+  public interface Component extends Percevoir.Provides {
   }
   
-  public interface Provides<Runnable> {
+  public interface Provides {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public IPerception perception();
+    public Do perception();
   }
   
-  public interface Parts<Runnable> {
+  public interface Parts {
   }
   
-  public static class ComponentImpl<Runnable> implements Perception.Component<Runnable>, Perception.Parts<Runnable> {
-    private final Perception.Requires<Runnable> bridge;
+  public static class ComponentImpl implements Percevoir.Component, Percevoir.Parts {
+    private final Percevoir.Requires bridge;
     
-    private final Perception<Runnable> implementation;
+    private final Percevoir implementation;
     
     public void start() {
       this.implementation.start();
@@ -52,7 +44,7 @@ public abstract class Perception<Runnable> {
       assert this.perception == null: "This is a bug.";
       this.perception = this.implementation.make_perception();
       if (this.perception == null) {
-      	throw new RuntimeException("make_perception() in clrobots.Perception<Runnable> should not return null.");
+      	throw new RuntimeException("make_perception() in clrobots.Percevoir should not return null.");
       }
     }
     
@@ -60,7 +52,7 @@ public abstract class Perception<Runnable> {
       init_perception();
     }
     
-    public ComponentImpl(final Perception<Runnable> implem, final Perception.Requires<Runnable> b, final boolean doInits) {
+    public ComponentImpl(final Percevoir implem, final Percevoir.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -76,9 +68,9 @@ public abstract class Perception<Runnable> {
       }
     }
     
-    private IPerception perception;
+    private Do perception;
     
-    public IPerception perception() {
+    public Do perception() {
       return this.perception;
     }
   }
@@ -97,7 +89,7 @@ public abstract class Perception<Runnable> {
    */
   private boolean started = false;;
   
-  private Perception.ComponentImpl<Runnable> selfComponent;
+  private Percevoir.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -114,7 +106,7 @@ public abstract class Perception<Runnable> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Perception.Provides<Runnable> provides() {
+  protected Percevoir.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -127,13 +119,13 @@ public abstract class Perception<Runnable> {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IPerception make_perception();
+  protected abstract Do make_perception();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Perception.Requires<Runnable> requires() {
+  protected Percevoir.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -145,7 +137,7 @@ public abstract class Perception<Runnable> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Perception.Parts<Runnable> parts() {
+  protected Percevoir.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -157,12 +149,12 @@ public abstract class Perception<Runnable> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Perception.Component<Runnable> _newComponent(final Perception.Requires<Runnable> b, final boolean start) {
+  public synchronized Percevoir.Component _newComponent(final Percevoir.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of Perception has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Percevoir has already been used to create a component, use another one.");
     }
     this.init = true;
-    Perception.ComponentImpl<Runnable>  _comp = new Perception.ComponentImpl<Runnable>(this, b, true);
+    Percevoir.ComponentImpl  _comp = new Percevoir.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }

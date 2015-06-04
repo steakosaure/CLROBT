@@ -1,105 +1,106 @@
 package clrobots;
 
-import clrobots.EcoRobot;
-import clrobots.EnvEco;
+import clrobots.EcoRobots;
 import clrobots.Forward;
-import clrobots.interfaces.IEnvInfos;
-import clrobots.interfaces.Iinteragir;
+import clrobots.Launcher;
+import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.ITakeThreads;
+import java.awt.Color;
 
 @SuppressWarnings("all")
-public abstract class Scenario<Runnable> {
-  public interface Requires<Runnable> {
+public abstract class ScenarioEco {
+  public interface Requires {
   }
   
-  public interface Component<Runnable> extends Scenario.Provides<Runnable> {
+  public interface Component extends ScenarioEco.Provides {
   }
   
-  public interface Provides<Runnable> {
+  public interface Provides {
   }
   
-  public interface Parts<Runnable> {
+  public interface Parts {
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public EnvEco.Component envEco();
+    public EcoRobots.Component ecoAE();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public EcoRobot.Component<Runnable> ecoRobots();
+    public Forward.Component<CycleAlert> fw();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public Forward.Component<IEnvInfos, Iinteragir> forward();
+    public Launcher.Component launcher();
   }
   
-  public static class ComponentImpl<Runnable> implements Scenario.Component<Runnable>, Scenario.Parts<Runnable> {
-    private final Scenario.Requires<Runnable> bridge;
+  public static class ComponentImpl implements ScenarioEco.Component, ScenarioEco.Parts {
+    private final ScenarioEco.Requires bridge;
     
-    private final Scenario<Runnable> implementation;
+    private final ScenarioEco implementation;
     
     public void start() {
-      assert this.envEco != null: "This is a bug.";
-      ((EnvEco.ComponentImpl) this.envEco).start();
-      assert this.ecoRobots != null: "This is a bug.";
-      ((EcoRobot.ComponentImpl<Runnable>) this.ecoRobots).start();
-      assert this.forward != null: "This is a bug.";
-      ((Forward.ComponentImpl<IEnvInfos, Iinteragir>) this.forward).start();
+      assert this.ecoAE != null: "This is a bug.";
+      ((EcoRobots.ComponentImpl) this.ecoAE).start();
+      assert this.fw != null: "This is a bug.";
+      ((Forward.ComponentImpl<CycleAlert>) this.fw).start();
+      assert this.launcher != null: "This is a bug.";
+      ((Launcher.ComponentImpl) this.launcher).start();
       this.implementation.start();
       this.implementation.started = true;
     }
     
-    private void init_envEco() {
-      assert this.envEco == null: "This is a bug.";
-      assert this.implem_envEco == null: "This is a bug.";
-      this.implem_envEco = this.implementation.make_envEco();
-      if (this.implem_envEco == null) {
-      	throw new RuntimeException("make_envEco() in clrobots.Scenario<Runnable> should not return null.");
+    private void init_ecoAE() {
+      assert this.ecoAE == null: "This is a bug.";
+      assert this.implem_ecoAE == null: "This is a bug.";
+      this.implem_ecoAE = this.implementation.make_ecoAE();
+      if (this.implem_ecoAE == null) {
+      	throw new RuntimeException("make_ecoAE() in clrobots.ScenarioEco should not return null.");
       }
-      this.envEco = this.implem_envEco._newComponent(new BridgeImpl_envEco(), false);
+      this.ecoAE = this.implem_ecoAE._newComponent(new BridgeImpl_ecoAE(), false);
       
     }
     
-    private void init_ecoRobots() {
-      assert this.ecoRobots == null: "This is a bug.";
-      assert this.implem_ecoRobots == null: "This is a bug.";
-      this.implem_ecoRobots = this.implementation.make_ecoRobots();
-      if (this.implem_ecoRobots == null) {
-      	throw new RuntimeException("make_ecoRobots() in clrobots.Scenario<Runnable> should not return null.");
+    private void init_fw() {
+      assert this.fw == null: "This is a bug.";
+      assert this.implem_fw == null: "This is a bug.";
+      this.implem_fw = this.implementation.make_fw();
+      if (this.implem_fw == null) {
+      	throw new RuntimeException("make_fw() in clrobots.ScenarioEco should not return null.");
       }
-      this.ecoRobots = this.implem_ecoRobots._newComponent(new BridgeImpl_ecoRobots(), false);
+      this.fw = this.implem_fw._newComponent(new BridgeImpl_fw(), false);
       
     }
     
-    private void init_forward() {
-      assert this.forward == null: "This is a bug.";
-      assert this.implem_forward == null: "This is a bug.";
-      this.implem_forward = this.implementation.make_forward();
-      if (this.implem_forward == null) {
-      	throw new RuntimeException("make_forward() in clrobots.Scenario<Runnable> should not return null.");
+    private void init_launcher() {
+      assert this.launcher == null: "This is a bug.";
+      assert this.implem_launcher == null: "This is a bug.";
+      this.implem_launcher = this.implementation.make_launcher();
+      if (this.implem_launcher == null) {
+      	throw new RuntimeException("make_launcher() in clrobots.ScenarioEco should not return null.");
       }
-      this.forward = this.implem_forward._newComponent(new BridgeImpl_forward(), false);
+      this.launcher = this.implem_launcher._newComponent(new BridgeImpl_launcher(), false);
       
     }
     
     protected void initParts() {
-      init_envEco();
-      init_ecoRobots();
-      init_forward();
+      init_ecoAE();
+      init_fw();
+      init_launcher();
     }
     
     protected void initProvidedPorts() {
       
     }
     
-    public ComponentImpl(final Scenario<Runnable> implem, final Scenario.Requires<Runnable> b, final boolean doInits) {
+    public ComponentImpl(final ScenarioEco implem, final ScenarioEco.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -115,111 +116,110 @@ public abstract class Scenario<Runnable> {
       }
     }
     
-    private EnvEco.Component envEco;
+    private EcoRobots.Component ecoAE;
     
-    private EnvEco implem_envEco;
+    private EcoRobots implem_ecoAE;
     
-    private final class BridgeImpl_envEco implements EnvEco.Requires {
-    }
-    
-    public final EnvEco.Component envEco() {
-      return this.envEco;
-    }
-    
-    private EcoRobot.Component<Runnable> ecoRobots;
-    
-    private EcoRobot<Runnable> implem_ecoRobots;
-    
-    private final class BridgeImpl_ecoRobots implements EcoRobot.Requires<Runnable> {
-    }
-    
-    public final EcoRobot.Component<Runnable> ecoRobots() {
-      return this.ecoRobots;
-    }
-    
-    private Forward.Component<IEnvInfos, Iinteragir> forward;
-    
-    private Forward<IEnvInfos, Iinteragir> implem_forward;
-    
-    private final class BridgeImpl_forward implements Forward.Requires<IEnvInfos, Iinteragir> {
-      public final IEnvInfos i() {
-        return Scenario.ComponentImpl.this.envEco().envInfos();
-      }
-      
-      public final Iinteragir j() {
-        return Scenario.ComponentImpl.this.envEco().interagir();
+    private final class BridgeImpl_ecoAE implements EcoRobots.Requires {
+      public final ITakeThreads threads() {
+        return ScenarioEco.ComponentImpl.this.launcher().threads();
       }
     }
     
-    public final Forward.Component<IEnvInfos, Iinteragir> forward() {
-      return this.forward;
+    public final EcoRobots.Component ecoAE() {
+      return this.ecoAE;
+    }
+    
+    private Forward.Component<CycleAlert> fw;
+    
+    private Forward<CycleAlert> implem_fw;
+    
+    private final class BridgeImpl_fw implements Forward.Requires<CycleAlert> {
+      public final CycleAlert i() {
+        return ScenarioEco.ComponentImpl.this.launcher().finishedCycle();
+      }
+    }
+    
+    public final Forward.Component<CycleAlert> fw() {
+      return this.fw;
+    }
+    
+    private Launcher.Component launcher;
+    
+    private Launcher implem_launcher;
+    
+    private final class BridgeImpl_launcher implements Launcher.Requires {
+    }
+    
+    public final Launcher.Component launcher() {
+      return this.launcher;
     }
   }
   
-  public static class DynamicAssembledRobot<Runnable> {
-    public interface Requires<Runnable> {
+  public static class DynamicAssembly {
+    public interface Requires {
     }
     
-    public interface Component<Runnable> extends Scenario.DynamicAssembledRobot.Provides<Runnable> {
+    public interface Component extends ScenarioEco.DynamicAssembly.Provides {
     }
     
-    public interface Provides<Runnable> {
+    public interface Provides {
     }
     
-    public interface Parts<Runnable> {
+    public interface Parts {
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public EcoRobot.Robot.Component<Runnable> rb();
+      public EcoRobots.Robot.Component agentE();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Forward.AgentForward.Component<IEnvInfos, Iinteragir> fr();
+      public Forward.Agent.Component<CycleAlert> aFW();
     }
     
-    public static class ComponentImpl<Runnable> implements Scenario.DynamicAssembledRobot.Component<Runnable>, Scenario.DynamicAssembledRobot.Parts<Runnable> {
-      private final Scenario.DynamicAssembledRobot.Requires<Runnable> bridge;
+    public static class ComponentImpl implements ScenarioEco.DynamicAssembly.Component, ScenarioEco.DynamicAssembly.Parts {
+      private final ScenarioEco.DynamicAssembly.Requires bridge;
       
-      private final Scenario.DynamicAssembledRobot<Runnable> implementation;
+      private final ScenarioEco.DynamicAssembly implementation;
       
       public void start() {
-        assert this.rb != null: "This is a bug.";
-        ((EcoRobot.Robot.ComponentImpl<Runnable>) this.rb).start();
-        assert this.fr != null: "This is a bug.";
-        ((Forward.AgentForward.ComponentImpl<IEnvInfos, Iinteragir>) this.fr).start();
+        assert this.agentE != null: "This is a bug.";
+        ((EcoRobots.Robot.ComponentImpl) this.agentE).start();
+        assert this.aFW != null: "This is a bug.";
+        ((Forward.Agent.ComponentImpl<CycleAlert>) this.aFW).start();
         this.implementation.start();
         this.implementation.started = true;
       }
       
-      private void init_rb() {
-        assert this.rb == null: "This is a bug.";
-        assert this.implementation.use_rb != null: "This is a bug.";
-        this.rb = this.implementation.use_rb._newComponent(new BridgeImpl_ecoRobots_rb(), false);
+      private void init_agentE() {
+        assert this.agentE == null: "This is a bug.";
+        assert this.implementation.use_agentE != null: "This is a bug.";
+        this.agentE = this.implementation.use_agentE._newComponent(new BridgeImpl_ecoAE_agentE(), false);
         
       }
       
-      private void init_fr() {
-        assert this.fr == null: "This is a bug.";
-        assert this.implementation.use_fr != null: "This is a bug.";
-        this.fr = this.implementation.use_fr._newComponent(new BridgeImpl_forward_fr(), false);
+      private void init_aFW() {
+        assert this.aFW == null: "This is a bug.";
+        assert this.implementation.use_aFW != null: "This is a bug.";
+        this.aFW = this.implementation.use_aFW._newComponent(new BridgeImpl_fw_aFW(), false);
         
       }
       
       protected void initParts() {
-        init_rb();
-        init_fr();
+        init_agentE();
+        init_aFW();
       }
       
       protected void initProvidedPorts() {
         
       }
       
-      public ComponentImpl(final Scenario.DynamicAssembledRobot<Runnable> implem, final Scenario.DynamicAssembledRobot.Requires<Runnable> b, final boolean doInits) {
+      public ComponentImpl(final ScenarioEco.DynamicAssembly implem, final ScenarioEco.DynamicAssembly.Requires b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -235,29 +235,25 @@ public abstract class Scenario<Runnable> {
         }
       }
       
-      private EcoRobot.Robot.Component<Runnable> rb;
+      private EcoRobots.Robot.Component agentE;
       
-      private final class BridgeImpl_ecoRobots_rb implements EcoRobot.Robot.Requires<Runnable> {
-        public final IEnvInfos envInfosR() {
-          return Scenario.DynamicAssembledRobot.ComponentImpl.this.fr().a();
-        }
-        
-        public final Iinteragir interaction() {
-          return Scenario.DynamicAssembledRobot.ComponentImpl.this.fr().b();
+      private final class BridgeImpl_ecoAE_agentE implements EcoRobots.Robot.Requires {
+        public final CycleAlert finishedCycle() {
+          return ScenarioEco.DynamicAssembly.ComponentImpl.this.aFW().a();
         }
       }
       
-      public final EcoRobot.Robot.Component<Runnable> rb() {
-        return this.rb;
+      public final EcoRobots.Robot.Component agentE() {
+        return this.agentE;
       }
       
-      private Forward.AgentForward.Component<IEnvInfos, Iinteragir> fr;
+      private Forward.Agent.Component<CycleAlert> aFW;
       
-      private final class BridgeImpl_forward_fr implements Forward.AgentForward.Requires<IEnvInfos, Iinteragir> {
+      private final class BridgeImpl_fw_aFW implements Forward.Agent.Requires<CycleAlert> {
       }
       
-      public final Forward.AgentForward.Component<IEnvInfos, Iinteragir> fr() {
-        return this.fr;
+      public final Forward.Agent.Component<CycleAlert> aFW() {
+        return this.aFW;
       }
     }
     
@@ -275,7 +271,7 @@ public abstract class Scenario<Runnable> {
      */
     private boolean started = false;;
     
-    private Scenario.DynamicAssembledRobot.ComponentImpl<Runnable> selfComponent;
+    private ScenarioEco.DynamicAssembly.ComponentImpl selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -292,7 +288,7 @@ public abstract class Scenario<Runnable> {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected Scenario.DynamicAssembledRobot.Provides<Runnable> provides() {
+    protected ScenarioEco.DynamicAssembly.Provides provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -304,7 +300,7 @@ public abstract class Scenario<Runnable> {
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected Scenario.DynamicAssembledRobot.Requires<Runnable> requires() {
+    protected ScenarioEco.DynamicAssembly.Requires requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -316,7 +312,7 @@ public abstract class Scenario<Runnable> {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected Scenario.DynamicAssembledRobot.Parts<Runnable> parts() {
+    protected ScenarioEco.DynamicAssembly.Parts parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -324,33 +320,33 @@ public abstract class Scenario<Runnable> {
       return this.selfComponent;
     }
     
-    private EcoRobot.Robot<Runnable> use_rb;
+    private EcoRobots.Robot use_agentE;
     
-    private Forward.AgentForward<IEnvInfos, Iinteragir> use_fr;
+    private Forward.Agent<CycleAlert> use_aFW;
     
     /**
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized Scenario.DynamicAssembledRobot.Component<Runnable> _newComponent(final Scenario.DynamicAssembledRobot.Requires<Runnable> b, final boolean start) {
+    public synchronized ScenarioEco.DynamicAssembly.Component _newComponent(final ScenarioEco.DynamicAssembly.Requires b, final boolean start) {
       if (this.init) {
-      	throw new RuntimeException("This instance of DynamicAssembledRobot has already been used to create a component, use another one.");
+      	throw new RuntimeException("This instance of DynamicAssembly has already been used to create a component, use another one.");
       }
       this.init = true;
-      Scenario.DynamicAssembledRobot.ComponentImpl<Runnable>  _comp = new Scenario.DynamicAssembledRobot.ComponentImpl<Runnable>(this, b, true);
+      ScenarioEco.DynamicAssembly.ComponentImpl  _comp = new ScenarioEco.DynamicAssembly.ComponentImpl(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private Scenario.ComponentImpl<Runnable> ecosystemComponent;
+    private ScenarioEco.ComponentImpl ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected Scenario.Provides<Runnable> eco_provides() {
+    protected ScenarioEco.Provides eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -359,7 +355,7 @@ public abstract class Scenario<Runnable> {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected Scenario.Requires<Runnable> eco_requires() {
+    protected ScenarioEco.Requires eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -368,7 +364,7 @@ public abstract class Scenario<Runnable> {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected Scenario.Parts<Runnable> eco_parts() {
+    protected ScenarioEco.Parts eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -388,7 +384,7 @@ public abstract class Scenario<Runnable> {
    */
   private boolean started = false;;
   
-  private Scenario.ComponentImpl<Runnable> selfComponent;
+  private ScenarioEco.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -405,7 +401,7 @@ public abstract class Scenario<Runnable> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Scenario.Provides<Runnable> provides() {
+  protected ScenarioEco.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -417,7 +413,7 @@ public abstract class Scenario<Runnable> {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Scenario.Requires<Runnable> requires() {
+  protected ScenarioEco.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -429,7 +425,7 @@ public abstract class Scenario<Runnable> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Scenario.Parts<Runnable> parts() {
+  protected ScenarioEco.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -442,32 +438,32 @@ public abstract class Scenario<Runnable> {
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract EnvEco make_envEco();
+  protected abstract EcoRobots make_ecoAE();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract EcoRobot<Runnable> make_ecoRobots();
+  protected abstract Forward<CycleAlert> make_fw();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract Forward<IEnvInfos, Iinteragir> make_forward();
+  protected abstract Launcher make_launcher();
   
   /**
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Scenario.Component<Runnable> _newComponent(final Scenario.Requires<Runnable> b, final boolean start) {
+  public synchronized ScenarioEco.Component _newComponent(final ScenarioEco.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of Scenario has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of ScenarioEco has already been used to create a component, use another one.");
     }
     this.init = true;
-    Scenario.ComponentImpl<Runnable>  _comp = new Scenario.ComponentImpl<Runnable>(this, b, true);
+    ScenarioEco.ComponentImpl  _comp = new ScenarioEco.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -478,28 +474,28 @@ public abstract class Scenario<Runnable> {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected Scenario.DynamicAssembledRobot<Runnable> make_DynamicAssembledRobot() {
-    return new Scenario.DynamicAssembledRobot<Runnable>();
+  protected ScenarioEco.DynamicAssembly make_DynamicAssembly(final String id, final Color color) {
+    return new ScenarioEco.DynamicAssembly();
   }
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public Scenario.DynamicAssembledRobot<Runnable> _createImplementationOfDynamicAssembledRobot() {
-    Scenario.DynamicAssembledRobot<Runnable> implem = make_DynamicAssembledRobot();
+  public ScenarioEco.DynamicAssembly _createImplementationOfDynamicAssembly(final String id, final Color color) {
+    ScenarioEco.DynamicAssembly implem = make_DynamicAssembly(id,color);
     if (implem == null) {
-    	throw new RuntimeException("make_DynamicAssembledRobot() in clrobots.Scenario should not return null.");
+    	throw new RuntimeException("make_DynamicAssembly() in clrobots.ScenarioEco should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
     implem.ecosystemComponent = this.selfComponent;
-    assert this.selfComponent.implem_ecoRobots != null: "This is a bug.";
-    assert implem.use_rb == null: "This is a bug.";
-    implem.use_rb = this.selfComponent.implem_ecoRobots._createImplementationOfRobot();
-    assert this.selfComponent.implem_forward != null: "This is a bug.";
-    assert implem.use_fr == null: "This is a bug.";
-    implem.use_fr = this.selfComponent.implem_forward._createImplementationOfAgentForward();
+    assert this.selfComponent.implem_ecoAE != null: "This is a bug.";
+    assert implem.use_agentE == null: "This is a bug.";
+    implem.use_agentE = this.selfComponent.implem_ecoAE._createImplementationOfRobot(id,color);
+    assert this.selfComponent.implem_fw != null: "This is a bug.";
+    assert implem.use_aFW == null: "This is a bug.";
+    implem.use_aFW = this.selfComponent.implem_fw._createImplementationOfAgent();
     return implem;
   }
   
@@ -507,16 +503,16 @@ public abstract class Scenario<Runnable> {
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected Scenario.DynamicAssembledRobot.Component<Runnable> newDynamicAssembledRobot() {
-    Scenario.DynamicAssembledRobot<Runnable> _implem = _createImplementationOfDynamicAssembledRobot();
-    return _implem._newComponent(new Scenario.DynamicAssembledRobot.Requires<Runnable>() {},true);
+  protected ScenarioEco.DynamicAssembly.Component newDynamicAssembly(final String id, final Color color) {
+    ScenarioEco.DynamicAssembly _implem = _createImplementationOfDynamicAssembly(id,color);
+    return _implem._newComponent(new ScenarioEco.DynamicAssembly.Requires() {},true);
   }
   
   /**
    * Use to instantiate a component from this implementation.
    * 
    */
-  public Scenario.Component<Runnable> newComponent() {
-    return this._newComponent(new Scenario.Requires<Runnable>() {}, true);
+  public ScenarioEco.Component newComponent() {
+    return this._newComponent(new ScenarioEco.Requires() {}, true);
   }
 }

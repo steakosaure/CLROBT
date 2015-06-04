@@ -1,15 +1,18 @@
 package clrobots;
 
-import clrobots.interfaces.IEnvInfos;
-import clrobots.interfaces.Igui;
-import clrobots.interfaces.Iinteragir;
+import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Environnement {
+public abstract class Decider {
   public interface Requires {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public Do action();
   }
   
-  public interface Component extends Environnement.Provides {
+  public interface Component extends Decider.Provides {
   }
   
   public interface Provides {
@@ -17,28 +20,16 @@ public abstract class Environnement {
      * This can be called to access the provided port.
      * 
      */
-    public Igui gui();
-    
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public Iinteragir interagir();
-    
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public IEnvInfos envInfos();
+    public Do decision();
   }
   
   public interface Parts {
   }
   
-  public static class ComponentImpl implements Environnement.Component, Environnement.Parts {
-    private final Environnement.Requires bridge;
+  public static class ComponentImpl implements Decider.Component, Decider.Parts {
+    private final Decider.Requires bridge;
     
-    private final Environnement implementation;
+    private final Decider implementation;
     
     public void start() {
       this.implementation.start();
@@ -49,37 +40,19 @@ public abstract class Environnement {
       
     }
     
-    private void init_gui() {
-      assert this.gui == null: "This is a bug.";
-      this.gui = this.implementation.make_gui();
-      if (this.gui == null) {
-      	throw new RuntimeException("make_gui() in clrobots.Environnement should not return null.");
-      }
-    }
-    
-    private void init_interagir() {
-      assert this.interagir == null: "This is a bug.";
-      this.interagir = this.implementation.make_interagir();
-      if (this.interagir == null) {
-      	throw new RuntimeException("make_interagir() in clrobots.Environnement should not return null.");
-      }
-    }
-    
-    private void init_envInfos() {
-      assert this.envInfos == null: "This is a bug.";
-      this.envInfos = this.implementation.make_envInfos();
-      if (this.envInfos == null) {
-      	throw new RuntimeException("make_envInfos() in clrobots.Environnement should not return null.");
+    private void init_decision() {
+      assert this.decision == null: "This is a bug.";
+      this.decision = this.implementation.make_decision();
+      if (this.decision == null) {
+      	throw new RuntimeException("make_decision() in clrobots.Decider should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_gui();
-      init_interagir();
-      init_envInfos();
+      init_decision();
     }
     
-    public ComponentImpl(final Environnement implem, final Environnement.Requires b, final boolean doInits) {
+    public ComponentImpl(final Decider implem, final Decider.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -95,22 +68,10 @@ public abstract class Environnement {
       }
     }
     
-    private Igui gui;
+    private Do decision;
     
-    public Igui gui() {
-      return this.gui;
-    }
-    
-    private Iinteragir interagir;
-    
-    public Iinteragir interagir() {
-      return this.interagir;
-    }
-    
-    private IEnvInfos envInfos;
-    
-    public IEnvInfos envInfos() {
-      return this.envInfos;
+    public Do decision() {
+      return this.decision;
     }
   }
   
@@ -128,7 +89,7 @@ public abstract class Environnement {
    */
   private boolean started = false;;
   
-  private Environnement.ComponentImpl selfComponent;
+  private Decider.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -145,7 +106,7 @@ public abstract class Environnement {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Environnement.Provides provides() {
+  protected Decider.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -158,27 +119,13 @@ public abstract class Environnement {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract Igui make_gui();
-  
-  /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract Iinteragir make_interagir();
-  
-  /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract IEnvInfos make_envInfos();
+  protected abstract Do make_decision();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Environnement.Requires requires() {
+  protected Decider.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -190,7 +137,7 @@ public abstract class Environnement {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Environnement.Parts parts() {
+  protected Decider.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -202,23 +149,15 @@ public abstract class Environnement {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Environnement.Component _newComponent(final Environnement.Requires b, final boolean start) {
+  public synchronized Decider.Component _newComponent(final Decider.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of Environnement has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of Decider has already been used to create a component, use another one.");
     }
     this.init = true;
-    Environnement.ComponentImpl  _comp = new Environnement.ComponentImpl(this, b, true);
+    Decider.ComponentImpl  _comp = new Decider.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
     return _comp;
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public Environnement.Component newComponent() {
-    return this._newComponent(new Environnement.Requires() {}, true);
   }
 }

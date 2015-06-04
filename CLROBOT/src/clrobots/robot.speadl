@@ -1,106 +1,78 @@
-import clrobots.interfaces.ICreateBoite
-import clrobots.interfaces.ICreateRobot
-import clrobots.interfaces.IDecision
+import clrobots.interfaces.CycleAlert
+import clrobots.interfaces.Do
 import clrobots.interfaces.IEnvInfos
-import clrobots.interfaces.IPerception
+import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
-import clrobots.interfaces.IBoiteInfo
-import clrobots.interfaces.ICreateNid
-import clrobots.interfaces.INidInfo
 import clrobots.interfaces.Iinteragir
-import clrobots.interfaces.IAction
+import java.awt.Color
 
 namespace clrobots{
 	
+	
+	//Composant permettant l'affichage
 	component GUI {
 		requires gui : Igui
 	}
 	
+	//Composant contenant l'environnement 
 	component Environnement {
 		provides gui : Igui
 		provides interagir : Iinteragir
 		provides envInfos: IEnvInfos
-		requires boitesInfos :IBoiteInfo
-		requires nidInfos : INidInfo
 	}
 	
-	ecosystem EcoBoite{
-		provides create : ICreateBoite
-		species Boite{
-			provides boiteinfo : IBoiteInfo	
-		}
-	}
-	
-	ecosystem ForwardBoite[IBoiteInfo]{
-		species AgentForward{
-			requires a:IBoiteInfo
-			
-		}
+	ecosystem EcoRobots{
 		
-		provides i: IBoiteInfo
-	}
-	
-	ecosystem ForwardNid[INidInfo]{
-		species AgentForward{
-			requires a:INidInfo
+			requires threads: ITakeThreads
+			//requires updateRobotsMap: UpdateRobotsList
 			
-		}
-		
-		provides i: INidInfo
-	}
-	
-	ecosystem EcoNid{
-		provides create : ICreateNid
-		species Nid{
-			provides nidinfo : INidInfo
-		}
-	}
-	
-	ecosystem Forward[I,J]{
-		species AgentForward{
-			provides a: I
-			provides b:J
-		}
-		
-		requires i: I
-		requires j: J
-	}
-	
-	ecosystem EcoRobot[Runnable]{
-			provides create: ICreateRobot
-			
-			species Robot{
-				requires envInfosR: IEnvInfos 
-				requires interaction: Iinteragir
+			species Robot(id: String, color: Color){
 				
-				part percevoir: Perception[Runnable]{
+				//requires envInfosR: IEnvInfos 
+				//requires interaction: Iinteragir
+				
+				provides launchCycle : Do = percevoir.perception	
+				requires finishedCycle: CycleAlert
+				
+				part percevoir: Percevoir{
 					bind decision to decider.decision
-					bind envInfos to envInfosR
+					//bind envInfos to envInfosR
 				}
 				
-				part decider: Decision[Runnable]{
+				part decider: Decider{
 					bind action to agir.action
 				}
-				part agir: Action[Runnable]{
-					bind interagir to interaction
-				}
+				part agir: Agir{
+					bind finishedCycle to finishedCycle
+					//bind interagir to interaction
 			}
 		}
+	}
 		
-	component Perception[Runnable]{
-		provides perception : IPerception
-		requires envInfos : IEnvInfos
-		requires decision: IDecision
+	component Percevoir{
+		provides perception : Do
+		//requires envInfos : IEnvInfos
+		requires decision: Do
 	}
 	
-	component Decision[Runnable]{
-		provides decision : IDecision
-		requires action: IAction
+	component Decider{
+		provides decision : Do
+		requires action: Do
 	}
 	
-	component Action[Runnable]{
-		provides action : IAction
-		requires interagir : Iinteragir
+	component Agir{
+		provides action : Do
+		requires finishedCycle : CycleAlert
+		//requires interagir : Iinteragir
+	}
+	
+	ecosystem Forward[I]{
+		 species Agent{
+		 	
+		 	provides a: I
+		 }
+		 
+		 requires i: I
 	}
 	
 	

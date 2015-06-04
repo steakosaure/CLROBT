@@ -1,28 +1,36 @@
 package clrobots;
 
+import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.Do;
+
 @SuppressWarnings("all")
-public abstract class ForwardBoite<IBoiteInfo> {
-  public interface Requires<IBoiteInfo> {
+public abstract class ForwardLauncher {
+  public interface Requires {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public CycleAlert finishedCycle();
   }
   
-  public interface Component<IBoiteInfo> extends ForwardBoite.Provides<IBoiteInfo> {
+  public interface Component extends ForwardLauncher.Provides {
   }
   
-  public interface Provides<IBoiteInfo> {
+  public interface Provides {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public IBoiteInfo i();
+    public Do launchCycle();
   }
   
-  public interface Parts<IBoiteInfo> {
+  public interface Parts {
   }
   
-  public static class ComponentImpl<IBoiteInfo> implements ForwardBoite.Component<IBoiteInfo>, ForwardBoite.Parts<IBoiteInfo> {
-    private final ForwardBoite.Requires<IBoiteInfo> bridge;
+  public static class ComponentImpl implements ForwardLauncher.Component, ForwardLauncher.Parts {
+    private final ForwardLauncher.Requires bridge;
     
-    private final ForwardBoite<IBoiteInfo> implementation;
+    private final ForwardLauncher implementation;
     
     public void start() {
       this.implementation.start();
@@ -33,19 +41,19 @@ public abstract class ForwardBoite<IBoiteInfo> {
       
     }
     
-    private void init_i() {
-      assert this.i == null: "This is a bug.";
-      this.i = this.implementation.make_i();
-      if (this.i == null) {
-      	throw new RuntimeException("make_i() in clrobots.ForwardBoite<IBoiteInfo> should not return null.");
+    private void init_launchCycle() {
+      assert this.launchCycle == null: "This is a bug.";
+      this.launchCycle = this.implementation.make_launchCycle();
+      if (this.launchCycle == null) {
+      	throw new RuntimeException("make_launchCycle() in clrobots.ForwardLauncher should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_i();
+      init_launchCycle();
     }
     
-    public ComponentImpl(final ForwardBoite<IBoiteInfo> implem, final ForwardBoite.Requires<IBoiteInfo> b, final boolean doInits) {
+    public ComponentImpl(final ForwardLauncher implem, final ForwardLauncher.Requires b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -61,35 +69,40 @@ public abstract class ForwardBoite<IBoiteInfo> {
       }
     }
     
-    private IBoiteInfo i;
+    private Do launchCycle;
     
-    public IBoiteInfo i() {
-      return this.i;
+    public Do launchCycle() {
+      return this.launchCycle;
     }
   }
   
-  public static class AgentForward<IBoiteInfo> {
-    public interface Requires<IBoiteInfo> {
+  public static abstract class AgentForward {
+    public interface Requires {
       /**
        * This can be called by the implementation to access this required port.
        * 
        */
-      public IBoiteInfo a();
+      public Do launchCycle();
     }
     
-    public interface Component<IBoiteInfo> extends ForwardBoite.AgentForward.Provides<IBoiteInfo> {
+    public interface Component extends ForwardLauncher.AgentForward.Provides {
     }
     
-    public interface Provides<IBoiteInfo> {
+    public interface Provides {
+      /**
+       * This can be called to access the provided port.
+       * 
+       */
+      public CycleAlert finishedCycle();
     }
     
-    public interface Parts<IBoiteInfo> {
+    public interface Parts {
     }
     
-    public static class ComponentImpl<IBoiteInfo> implements ForwardBoite.AgentForward.Component<IBoiteInfo>, ForwardBoite.AgentForward.Parts<IBoiteInfo> {
-      private final ForwardBoite.AgentForward.Requires<IBoiteInfo> bridge;
+    public static class ComponentImpl implements ForwardLauncher.AgentForward.Component, ForwardLauncher.AgentForward.Parts {
+      private final ForwardLauncher.AgentForward.Requires bridge;
       
-      private final ForwardBoite.AgentForward<IBoiteInfo> implementation;
+      private final ForwardLauncher.AgentForward implementation;
       
       public void start() {
         this.implementation.start();
@@ -100,11 +113,19 @@ public abstract class ForwardBoite<IBoiteInfo> {
         
       }
       
-      protected void initProvidedPorts() {
-        
+      private void init_finishedCycle() {
+        assert this.finishedCycle == null: "This is a bug.";
+        this.finishedCycle = this.implementation.make_finishedCycle();
+        if (this.finishedCycle == null) {
+        	throw new RuntimeException("make_finishedCycle() in clrobots.ForwardLauncher$AgentForward should not return null.");
+        }
       }
       
-      public ComponentImpl(final ForwardBoite.AgentForward<IBoiteInfo> implem, final ForwardBoite.AgentForward.Requires<IBoiteInfo> b, final boolean doInits) {
+      protected void initProvidedPorts() {
+        init_finishedCycle();
+      }
+      
+      public ComponentImpl(final ForwardLauncher.AgentForward implem, final ForwardLauncher.AgentForward.Requires b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -118,6 +139,12 @@ public abstract class ForwardBoite<IBoiteInfo> {
         	initParts();
         	initProvidedPorts();
         }
+      }
+      
+      private CycleAlert finishedCycle;
+      
+      public CycleAlert finishedCycle() {
+        return this.finishedCycle;
       }
     }
     
@@ -135,7 +162,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
      */
     private boolean started = false;;
     
-    private ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo> selfComponent;
+    private ForwardLauncher.AgentForward.ComponentImpl selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -152,7 +179,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected ForwardBoite.AgentForward.Provides<IBoiteInfo> provides() {
+    protected ForwardLauncher.AgentForward.Provides provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -161,10 +188,17 @@ public abstract class ForwardBoite<IBoiteInfo> {
     }
     
     /**
+     * This should be overridden by the implementation to define the provided port.
+     * This will be called once during the construction of the component to initialize the port.
+     * 
+     */
+    protected abstract CycleAlert make_finishedCycle();
+    
+    /**
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected ForwardBoite.AgentForward.Requires<IBoiteInfo> requires() {
+    protected ForwardLauncher.AgentForward.Requires requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -176,7 +210,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected ForwardBoite.AgentForward.Parts<IBoiteInfo> parts() {
+    protected ForwardLauncher.AgentForward.Parts parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -188,25 +222,25 @@ public abstract class ForwardBoite<IBoiteInfo> {
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized ForwardBoite.AgentForward.Component<IBoiteInfo> _newComponent(final ForwardBoite.AgentForward.Requires<IBoiteInfo> b, final boolean start) {
+    public synchronized ForwardLauncher.AgentForward.Component _newComponent(final ForwardLauncher.AgentForward.Requires b, final boolean start) {
       if (this.init) {
       	throw new RuntimeException("This instance of AgentForward has already been used to create a component, use another one.");
       }
       this.init = true;
-      ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo>  _comp = new ForwardBoite.AgentForward.ComponentImpl<IBoiteInfo>(this, b, true);
+      ForwardLauncher.AgentForward.ComponentImpl  _comp = new ForwardLauncher.AgentForward.ComponentImpl(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private ForwardBoite.ComponentImpl<IBoiteInfo> ecosystemComponent;
+    private ForwardLauncher.ComponentImpl ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected ForwardBoite.Provides<IBoiteInfo> eco_provides() {
+    protected ForwardLauncher.Provides eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -215,7 +249,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected ForwardBoite.Requires<IBoiteInfo> eco_requires() {
+    protected ForwardLauncher.Requires eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -224,7 +258,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected ForwardBoite.Parts<IBoiteInfo> eco_parts() {
+    protected ForwardLauncher.Parts eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -244,7 +278,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
    */
   private boolean started = false;;
   
-  private ForwardBoite.ComponentImpl<IBoiteInfo> selfComponent;
+  private ForwardLauncher.ComponentImpl selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -261,7 +295,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected ForwardBoite.Provides<IBoiteInfo> provides() {
+  protected ForwardLauncher.Provides provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -274,13 +308,13 @@ public abstract class ForwardBoite<IBoiteInfo> {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IBoiteInfo make_i();
+  protected abstract Do make_launchCycle();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected ForwardBoite.Requires<IBoiteInfo> requires() {
+  protected ForwardLauncher.Requires requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -292,7 +326,7 @@ public abstract class ForwardBoite<IBoiteInfo> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected ForwardBoite.Parts<IBoiteInfo> parts() {
+  protected ForwardLauncher.Parts parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -304,12 +338,12 @@ public abstract class ForwardBoite<IBoiteInfo> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized ForwardBoite.Component<IBoiteInfo> _newComponent(final ForwardBoite.Requires<IBoiteInfo> b, final boolean start) {
+  public synchronized ForwardLauncher.Component _newComponent(final ForwardLauncher.Requires b, final boolean start) {
     if (this.init) {
-    	throw new RuntimeException("This instance of ForwardBoite has already been used to create a component, use another one.");
+    	throw new RuntimeException("This instance of ForwardLauncher has already been used to create a component, use another one.");
     }
     this.init = true;
-    ForwardBoite.ComponentImpl<IBoiteInfo>  _comp = new ForwardBoite.ComponentImpl<IBoiteInfo>(this, b, true);
+    ForwardLauncher.ComponentImpl  _comp = new ForwardLauncher.ComponentImpl(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -320,30 +354,20 @@ public abstract class ForwardBoite<IBoiteInfo> {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected ForwardBoite.AgentForward<IBoiteInfo> make_AgentForward() {
-    return new ForwardBoite.AgentForward<IBoiteInfo>();
-  }
+  protected abstract ForwardLauncher.AgentForward make_AgentForward();
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public ForwardBoite.AgentForward<IBoiteInfo> _createImplementationOfAgentForward() {
-    ForwardBoite.AgentForward<IBoiteInfo> implem = make_AgentForward();
+  public ForwardLauncher.AgentForward _createImplementationOfAgentForward() {
+    ForwardLauncher.AgentForward implem = make_AgentForward();
     if (implem == null) {
-    	throw new RuntimeException("make_AgentForward() in clrobots.ForwardBoite should not return null.");
+    	throw new RuntimeException("make_AgentForward() in clrobots.ForwardLauncher should not return null.");
     }
     assert implem.ecosystemComponent == null: "This is a bug.";
     assert this.selfComponent != null: "This is a bug.";
     implem.ecosystemComponent = this.selfComponent;
     return implem;
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public ForwardBoite.Component<IBoiteInfo> newComponent() {
-    return this._newComponent(new ForwardBoite.Requires<IBoiteInfo>() {}, true);
   }
 }
