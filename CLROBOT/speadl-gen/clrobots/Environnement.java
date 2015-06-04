@@ -1,25 +1,12 @@
 package clrobots;
 
-import clrobots.interfaces.IBoiteInfo;
 import clrobots.interfaces.IEnvInfos;
-import clrobots.interfaces.INidInfo;
 import clrobots.interfaces.Igui;
 import clrobots.interfaces.Iinteragir;
 
 @SuppressWarnings("all")
 public abstract class Environnement {
   public interface Requires {
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public IBoiteInfo boitesInfos();
-    
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public INidInfo nidInfos();
   }
   
   public interface Component extends Environnement.Provides {
@@ -225,5 +212,13 @@ public abstract class Environnement {
     	_comp.start();
     }
     return _comp;
+  }
+  
+  /**
+   * Use to instantiate a component from this implementation.
+   * 
+   */
+  public Environnement.Component newComponent() {
+    return this._newComponent(new Environnement.Requires() {}, true);
   }
 }

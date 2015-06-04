@@ -1,10 +1,6 @@
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
-import clrobots.interfaces.IBoiteInfo
-import clrobots.interfaces.ICreateBoite
-import clrobots.interfaces.ICreateNid
 import clrobots.interfaces.IEnvInfos
-import clrobots.interfaces.INidInfo
 import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
 import clrobots.interfaces.Iinteragir
@@ -12,48 +8,17 @@ import java.awt.Color
 
 namespace clrobots{
 	
+	
+	//Composant permettant l'affichage
 	component GUI {
 		requires gui : Igui
 	}
 	
+	//Composant contenant l'environnement 
 	component Environnement {
 		provides gui : Igui
 		provides interagir : Iinteragir
 		provides envInfos: IEnvInfos
-		requires boitesInfos :IBoiteInfo
-		requires nidInfos : INidInfo
-	}
-	
-	ecosystem EcoBoite{
-		provides create : ICreateBoite
-		species Boite{
-			provides boiteinfo : IBoiteInfo	
-		}
-	}
-	
-	ecosystem ForwardBoite[IBoiteInfo]{
-		species AgentForward{
-			requires a:IBoiteInfo
-			
-		}
-		
-		provides i: IBoiteInfo
-	}
-	
-	ecosystem ForwardNid[INidInfo]{
-		species AgentForward{
-			requires a:INidInfo
-			
-		}
-		
-		provides i: INidInfo
-	}
-	
-	ecosystem EcoNid{
-		provides create : ICreateNid
-		species Nid{
-			provides nidinfo : INidInfo
-		}
 	}
 	
 	ecosystem EcoRobots{
@@ -80,9 +45,9 @@ namespace clrobots{
 				part agir: Agir{
 					bind finishedCycle to finishedCycle
 					//bind interagir to interaction
-				}
 			}
 		}
+	}
 		
 	component Percevoir{
 		provides perception : Do

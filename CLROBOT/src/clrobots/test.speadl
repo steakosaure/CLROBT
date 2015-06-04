@@ -1,4 +1,4 @@
-import clrobots.interfaces.IBoiteInfo
+mport clrobots.interfaces.IBoiteInfo
 import clrobots.interfaces.ICreateBoite
 
 namespace test{
