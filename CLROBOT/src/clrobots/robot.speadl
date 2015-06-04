@@ -14,12 +14,6 @@ namespace clrobots{
 		requires gui : Igui
 	}
 	
-	//Composant contenant l'environnement 
-	component Environnement {
-		provides gui : Igui
-		provides interagir : Iinteragir
-		provides envInfos: IEnvInfos
-	}
 	
 	ecosystem EcoRobots{
 		

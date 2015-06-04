@@ -1,4 +1,4 @@
-package clrobots;
+package environnement;
 
 public class Cellule {
 	private int positionX;

@@ -1,15 +1,15 @@
-package clrobots.impl;
+package environnement.impl;
 
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import clrobots.Boite;
 import clrobots.Environnement;
 import clrobots.interfaces.IEnvInfos;
 import clrobots.interfaces.Igui;
 import clrobots.interfaces.Iinteragir;
+import environnement.Boite;
 
 public class EnvironnementImpl extends Environnement{
 	
