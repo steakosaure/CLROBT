@@ -5,7 +5,6 @@ public class Cellule {
 	private int positionY;
 	
 	
-	
 	public Cellule(int x, int y){
 		positionX = x;
 		positionY = y;
@@ -17,6 +16,10 @@ public class Cellule {
 	
 	public int getPositionY(){
 		return positionY;
+	}
+	
+	public void update(){
+		
 	}
 
 }
