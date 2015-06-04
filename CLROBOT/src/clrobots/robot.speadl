@@ -56,17 +56,7 @@ namespace clrobots{
 		}
 	}
 	
-	ecosystem Forward[I,J]{
-		species AgentForward{
-			provides a: I
-			provides b:J
-		}
-		
-		requires i: I
-		requires j: J
-	}
-	
-	ecosystem EcoRobot{
+	ecosystem EcoRobots{
 		
 			requires threads: ITakeThreads
 			//requires updateRobotsMap: UpdateRobotsList
@@ -109,6 +99,15 @@ namespace clrobots{
 		provides action : Do
 		requires finishedCycle : CycleAlert
 		//requires interagir : Iinteragir
+	}
+	
+	ecosystem Forward[I]{
+		 species Agent{
+		 	
+		 	provides a: I
+		 }
+		 
+		 requires i: I
 	}
 	
 	

@@ -2,7 +2,7 @@ package clrobots.impl;
 
 import java.awt.Color;
 
-import clrobots.EcoRobot;
+import clrobots.EcoRobots;
 import clrobots.Forward;
 import clrobots.Launcher;
 import clrobots.ScenarioEco;
@@ -11,7 +11,7 @@ import clrobots.interfaces.CycleAlert;
 public class ScenarioEcoImpl extends ScenarioEco	 {
 
 	@Override
-	protected EcoRobot make_ecoAE() {
+	protected EcoRobots make_ecoAE() {
 		return new EcoRobotImpl();
 	}
 

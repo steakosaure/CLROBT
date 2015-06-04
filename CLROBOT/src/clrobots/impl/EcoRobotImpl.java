@@ -11,10 +11,10 @@ import robot.impl.DeciderImpl;
 import robot.impl.PercevoirImpl;
 import clrobots.Agir;
 import clrobots.Decider;
-import clrobots.EcoRobot;
+import clrobots.EcoRobots;
 import clrobots.Percevoir;
 
-public class EcoRobotImpl extends EcoRobot {
+public class EcoRobotImpl extends EcoRobots {
 
 	private Map<String,Runnable> robotsMap;
 	private List<Runnable> listRunnable;
