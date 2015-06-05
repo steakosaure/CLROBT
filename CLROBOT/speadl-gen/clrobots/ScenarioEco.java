@@ -33,7 +33,7 @@ public abstract class ScenarioEco<Actionable, Context, ContextInit, SelfKnowledg
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public GUI.Component<UpdateOutput> gui();
+    public GUI.Component<UpdateOutput, ContextInit> gui();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
@@ -66,7 +66,7 @@ public abstract class ScenarioEco<Actionable, Context, ContextInit, SelfKnowledg
       assert this.environnement != null: "This is a bug.";
       ((Environnement.ComponentImpl<Actionable, Context, ContextInit, UpdateOutput>) this.environnement).start();
       assert this.gui != null: "This is a bug.";
-      ((GUI.ComponentImpl<UpdateOutput>) this.gui).start();
+      ((GUI.ComponentImpl<UpdateOutput, ContextInit>) this.gui).start();
       assert this.ecoAE != null: "This is a bug.";
       ((EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge>) this.ecoAE).start();
       assert this.fw != null: "This is a bug.";
@@ -174,14 +174,17 @@ public abstract class ScenarioEco<Actionable, Context, ContextInit, SelfKnowledg
       return this.environnement;
     }
     
-    private GUI.Component<UpdateOutput> gui;
+    private GUI.Component<UpdateOutput, ContextInit> gui;
     
-    private GUI<UpdateOutput> implem_gui;
+    private GUI<UpdateOutput, ContextInit> implem_gui;
     
-    private final class BridgeImpl_gui implements GUI.Requires<UpdateOutput> {
+    private final class BridgeImpl_gui implements GUI.Requires<UpdateOutput, ContextInit> {
+      public final ContextInit initEnvironnement() {
+        return ScenarioEco.ComponentImpl.this.environnement().envInit();
+      }
     }
     
-    public final GUI.Component<UpdateOutput> gui() {
+    public final GUI.Component<UpdateOutput, ContextInit> gui() {
       return this.gui;
     }
     
@@ -530,7 +533,7 @@ public abstract class ScenarioEco<Actionable, Context, ContextInit, SelfKnowledg
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract GUI<UpdateOutput> make_gui();
+  protected abstract GUI<UpdateOutput, ContextInit> make_gui();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.

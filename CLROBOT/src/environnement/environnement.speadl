@@ -1,6 +1,5 @@
 import environnement.interfaces.IEnvInfos
 import environnement.interfaces.IEnvInit
-import ui.interfaces.IUpdateUi
 import clrobots.interfaces.Iinteragir
 
 namespace clrobots{

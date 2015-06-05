@@ -30,7 +30,9 @@ namespace clrobots{
 			bind updateOutput to gui.updateGUI
 		}
 		
-		part gui: GUI[UpdateOutput]
+		part gui: GUI[UpdateOutput, ContextInit] {
+			bind initEnvironnement to environnement.envInit
+		}
 		
 		part ecoAE: EcoRobotAgents[Actionable, Context, SelfKnowledge]{
 			bind threads to launcher.threads

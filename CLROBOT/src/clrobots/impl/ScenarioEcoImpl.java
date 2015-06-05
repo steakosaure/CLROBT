@@ -2,7 +2,6 @@ package clrobots.impl;
 
 import java.awt.Color;
 
-import ui.interfaces.IUpdateUi;
 import clrobots.EcoRobotAgents;
 import clrobots.Environnement;
 import clrobots.Forward;
@@ -15,6 +14,8 @@ import clrobots.interfaces.Iinteragir;
 import environnement.impl.EnvironnementImpl;
 import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
+import gui.impl.GUIImpl;
+import gui.interfaces.IUpdateUi;
 
 public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge, IUpdateUi> {
 
@@ -90,9 +91,9 @@ public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit
 	}
 
 	@Override
-	protected GUI<IUpdateUi> make_gui() {
+	protected GUI<IUpdateUi, IEnvInit> make_gui() {
 		// TODO Auto-generated method stub
-		return null;
+		return new GUIImpl();
 	}
 
 }

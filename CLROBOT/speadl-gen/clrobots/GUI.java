@@ -1,14 +1,19 @@
 package clrobots;
 
 @SuppressWarnings("all")
-public abstract class GUI<UpdateGUI> {
-  public interface Requires<UpdateGUI> {
+public abstract class GUI<UpdateGUI, ContextInfos> {
+  public interface Requires<UpdateGUI, ContextInfos> {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public ContextInfos initEnvironnement();
   }
   
-  public interface Component<UpdateGUI> extends GUI.Provides<UpdateGUI> {
+  public interface Component<UpdateGUI, ContextInfos> extends GUI.Provides<UpdateGUI, ContextInfos> {
   }
   
-  public interface Provides<UpdateGUI> {
+  public interface Provides<UpdateGUI, ContextInfos> {
     /**
      * This can be called to access the provided port.
      * 
@@ -16,13 +21,13 @@ public abstract class GUI<UpdateGUI> {
     public UpdateGUI updateGUI();
   }
   
-  public interface Parts<UpdateGUI> {
+  public interface Parts<UpdateGUI, ContextInfos> {
   }
   
-  public static class ComponentImpl<UpdateGUI> implements GUI.Component<UpdateGUI>, GUI.Parts<UpdateGUI> {
-    private final GUI.Requires<UpdateGUI> bridge;
+  public static class ComponentImpl<UpdateGUI, ContextInfos> implements GUI.Component<UpdateGUI, ContextInfos>, GUI.Parts<UpdateGUI, ContextInfos> {
+    private final GUI.Requires<UpdateGUI, ContextInfos> bridge;
     
-    private final GUI<UpdateGUI> implementation;
+    private final GUI<UpdateGUI, ContextInfos> implementation;
     
     public void start() {
       this.implementation.start();
@@ -37,7 +42,7 @@ public abstract class GUI<UpdateGUI> {
       assert this.updateGUI == null: "This is a bug.";
       this.updateGUI = this.implementation.make_updateGUI();
       if (this.updateGUI == null) {
-      	throw new RuntimeException("make_updateGUI() in clrobots.GUI<UpdateGUI> should not return null.");
+      	throw new RuntimeException("make_updateGUI() in clrobots.GUI<UpdateGUI, ContextInfos> should not return null.");
       }
     }
     
@@ -45,7 +50,7 @@ public abstract class GUI<UpdateGUI> {
       init_updateGUI();
     }
     
-    public ComponentImpl(final GUI<UpdateGUI> implem, final GUI.Requires<UpdateGUI> b, final boolean doInits) {
+    public ComponentImpl(final GUI<UpdateGUI, ContextInfos> implem, final GUI.Requires<UpdateGUI, ContextInfos> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -82,7 +87,7 @@ public abstract class GUI<UpdateGUI> {
    */
   private boolean started = false;;
   
-  private GUI.ComponentImpl<UpdateGUI> selfComponent;
+  private GUI.ComponentImpl<UpdateGUI, ContextInfos> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -99,7 +104,7 @@ public abstract class GUI<UpdateGUI> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected GUI.Provides<UpdateGUI> provides() {
+  protected GUI.Provides<UpdateGUI, ContextInfos> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -118,7 +123,7 @@ public abstract class GUI<UpdateGUI> {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected GUI.Requires<UpdateGUI> requires() {
+  protected GUI.Requires<UpdateGUI, ContextInfos> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -130,7 +135,7 @@ public abstract class GUI<UpdateGUI> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected GUI.Parts<UpdateGUI> parts() {
+  protected GUI.Parts<UpdateGUI, ContextInfos> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -142,23 +147,15 @@ public abstract class GUI<UpdateGUI> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized GUI.Component<UpdateGUI> _newComponent(final GUI.Requires<UpdateGUI> b, final boolean start) {
+  public synchronized GUI.Component<UpdateGUI, ContextInfos> _newComponent(final GUI.Requires<UpdateGUI, ContextInfos> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of GUI has already been used to create a component, use another one.");
     }
     this.init = true;
-    GUI.ComponentImpl<UpdateGUI>  _comp = new GUI.ComponentImpl<UpdateGUI>(this, b, true);
+    GUI.ComponentImpl<UpdateGUI, ContextInfos>  _comp = new GUI.ComponentImpl<UpdateGUI, ContextInfos>(this, b, true);
     if (start) {
     	_comp.start();
     }
     return _comp;
-  }
-  
-  /**
-   * Use to instantiate a component from this implementation.
-   * 
-   */
-  public GUI.Component<UpdateGUI> newComponent() {
-    return this._newComponent(new GUI.Requires<UpdateGUI>() {}, true);
   }
 }

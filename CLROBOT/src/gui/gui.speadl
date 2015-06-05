@@ -1,7 +1,8 @@
 namespace clrobots{
 	
-		component GUI[UpdateGUI]{
+		component GUI[UpdateGUI, ContextInfos]{
 			provides updateGUI: UpdateGUI
+			requires initEnvironnement: ContextInfos
 		}
 	
 }
