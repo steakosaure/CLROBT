@@ -1,7 +1,7 @@
 package clrobots;
 
-import clrobots.interfaces.IEnvInfos;
 import clrobots.interfaces.Iinteragir;
+import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 import ui.interfaces.IUpdateUi;
 

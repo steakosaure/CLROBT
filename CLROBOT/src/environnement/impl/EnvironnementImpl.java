@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Random;
 
 import clrobots.Environnement;
-import clrobots.interfaces.IEnvInfos;
 import clrobots.interfaces.Iinteragir;
 import environnement.Boite;
 import environnement.CellStatus;
 import environnement.Cellule;
 import environnement.Nest;
+import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 
 public class EnvironnementImpl extends Environnement implements IEnvInfos, Iinteragir, IEnvInit{
@@ -118,6 +118,12 @@ public class EnvironnementImpl extends Environnement implements IEnvInfos, Iinte
 	@Override
 	public void putDownBox(Point point) {
 		cellList.get(point).addBoxtoNest();
+	}
+
+	@Override
+	public List<Cellule> getAdjacentCells(Point robotCoord) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
