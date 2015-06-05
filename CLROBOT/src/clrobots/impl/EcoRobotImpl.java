@@ -115,7 +115,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			@Override
 			public void makePerception() {
 				System.out.println(id+" : Perception");
-				
+				this.requires().context().getAdjacentCells(coord.getCoordinates());
 			}
 
 		}
