@@ -139,17 +139,22 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					if (cell.getStatus() == CellStatus.BOX){
 						containingBoxCells.add(cell);
 					}
-				}
+				}				
 				
-				/*Si j'ai pas de boite et rien en vue alors se déplace aléatoirement */
 				if (boite == null && containingBoxCells.isEmpty() && coord.getStatus() != CellStatus.BOX){
+					/*Si j'ai pas de boite et rien en vue alors se déplace aléatoirement */
 					int cellIndex = new Random().nextInt(adjacentCells.size());
 					this.requires().action().mooveRobotWithoutBox(id, color, coord.getCoordinates(), adjacentCells.get(cellIndex).getCoordinates());
 				} else if(boite == null){
-				/*Si pas de boite et boites en vue alors se déplace en direction de la boite de la meme couleur en priorité */
+					/*Si pas de boite et boites en vue alors se déplace en direction de la boite de la meme couleur en priorité */
+					
+				} else if(boite != null){
+					/*Si une boite et rien en vue alors se déplace vers le nid */
+					
+				} else if(true){
 					
 				}
-				/*Si une boite et rien en vue alors se déplace vers le nid */
+				
 				/*Si une boite pas de la meme couleur et une boite en vue de la meme couleur alors deposer la boite*/
 				
 				//this.requires().action().mooveRobotWithoutBox("", color, new Point(1,1), new Point(1,2));
