@@ -29,25 +29,35 @@ public class Cellule {
 		this.robotId = robotId;
 		this.robotColor = robotColor;
 		this.box = box;
-		this.status = CellStatus.ROBOTWITHBOX;
+		if (this.status != CellStatus.NEST){
+			this.status = CellStatus.ROBOTWITHBOX;
+		}
 	}
 	
 	public void robotNotCaryingBox(String robotId, Color robotColor) {
 		this.robotId = robotId;
 		this.robotColor = robotColor;
-		this.status = CellStatus.ROBOT;
+		if (this.status != CellStatus.NEST){
+			this.status = CellStatus.ROBOT;
+		}
 	}
 	
 	public void setEmpty(){
 		box = null;
 		robotColor = null;
 		robotId = null;
-		this.status = CellStatus.FREE;
+		if (this.status != CellStatus.NEST){
+			this.status = CellStatus.FREE;
+		}
 	}
 	
 	public void setBox(Boite box){
 		this.box = box;
 		this.status = CellStatus.BOX;
+	}
+	
+	public Boite getBox(){
+		return this.box;
 	}
 	
 	public void setNest(Nest nest){
@@ -57,6 +67,13 @@ public class Cellule {
 	
 	public CellStatus getStatus(){
 		return this.status;
+	}
+	
+	public void addBoxtoNest(){
+		if (nest != null){
+			nest.addBox();
+			this.box = null;
+		}
 	}
 
 }

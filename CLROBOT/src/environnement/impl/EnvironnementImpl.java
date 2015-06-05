@@ -92,4 +92,32 @@ public class EnvironnementImpl extends Environnement implements IEnvInfos, Iinte
 		return availableCells.get(cellIndex);
 	}
 
+	@Override
+	public void mooveRobotWithoutBox(String idRobot, Color color, Point oldPoint, Point newPoint) {
+		if (cellList.get(newPoint).getStatus() == CellStatus.FREE){
+			cellList.get(oldPoint).setEmpty();
+			cellList.get(newPoint).robotNotCaryingBox(idRobot, color);
+		}
+	}
+
+	@Override
+	public void takeBox(String idRobot, Color robotColor, Point point) {
+		cellList.get(point).robotCaryingBox(idRobot, robotColor, cellList.get(point).getBox());
+	}
+
+	@Override
+	public void mooveRobotWithBox(String idRobot, Color color, Boite boite,
+			Point oldPoint, Point newPoint) {
+		if (cellList.get(newPoint).getStatus() == CellStatus.FREE){
+			cellList.get(oldPoint).setEmpty();
+			cellList.get(newPoint).robotCaryingBox(idRobot, color, boite);
+		}
+		
+	}
+
+	@Override
+	public void putDownBox(Point point) {
+		cellList.get(point).addBoxtoNest();
+	}
+
 }
