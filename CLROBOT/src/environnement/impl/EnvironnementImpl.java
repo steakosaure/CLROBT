@@ -122,7 +122,7 @@ public class EnvironnementImpl extends Environnement implements IEnvInfos, Iinte
 
 	@Override
 	public List<Cellule> getAdjacentCells(Point robotCoord) {
-		// TODO Auto-generated method stub
+		//if()
 		return null;
 	}
 

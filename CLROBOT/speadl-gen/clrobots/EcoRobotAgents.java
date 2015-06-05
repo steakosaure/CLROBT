@@ -2,6 +2,7 @@ package clrobots;
 
 import clrobots.Agir;
 import clrobots.Decider;
+import clrobots.Knowledge;
 import clrobots.Percevoir;
 import clrobots.interfaces.CycleAlert;
 import clrobots.interfaces.Do;
@@ -108,6 +109,13 @@ public abstract class EcoRobotAgents {
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
+      public Knowledge.Component knowledge();
+      
+      /**
+       * This can be called by the implementation to access the part and its provided ports.
+       * It will be initialized after the required ports are initialized and before the provided ports are initialized.
+       * 
+       */
       public Percevoir.Component percevoir();
       
       /**
@@ -131,6 +139,8 @@ public abstract class EcoRobotAgents {
       private final EcoRobotAgents.Robot implementation;
       
       public void start() {
+        assert this.knowledge != null: "This is a bug.";
+        ((Knowledge.ComponentImpl) this.knowledge).start();
         assert this.percevoir != null: "This is a bug.";
         ((Percevoir.ComponentImpl) this.percevoir).start();
         assert this.decider != null: "This is a bug.";
@@ -139,6 +149,17 @@ public abstract class EcoRobotAgents {
         ((Agir.ComponentImpl) this.agir).start();
         this.implementation.start();
         this.implementation.started = true;
+      }
+      
+      private void init_knowledge() {
+        assert this.knowledge == null: "This is a bug.";
+        assert this.implem_knowledge == null: "This is a bug.";
+        this.implem_knowledge = this.implementation.make_knowledge();
+        if (this.implem_knowledge == null) {
+        	throw new RuntimeException("make_knowledge() in clrobots.EcoRobotAgents$Robot should not return null.");
+        }
+        this.knowledge = this.implem_knowledge._newComponent(new BridgeImpl_knowledge(), false);
+        
       }
       
       private void init_percevoir() {
@@ -175,6 +196,7 @@ public abstract class EcoRobotAgents {
       }
       
       protected void initParts() {
+        init_knowledge();
         init_percevoir();
         init_decider();
         init_agir();
@@ -202,6 +224,17 @@ public abstract class EcoRobotAgents {
       
       public Do launchCycle() {
         return this.percevoir().perception();
+      }
+      
+      private Knowledge.Component knowledge;
+      
+      private Knowledge implem_knowledge;
+      
+      private final class BridgeImpl_knowledge implements Knowledge.Requires {
+      }
+      
+      public final Knowledge.Component knowledge() {
+        return this.knowledge;
       }
       
       private Percevoir.Component percevoir;
@@ -309,6 +342,13 @@ public abstract class EcoRobotAgents {
       }
       return this.selfComponent;
     }
+    
+    /**
+     * This should be overridden by the implementation to define how to create this sub-component.
+     * This will be called once during the construction of the component to initialize this sub-component.
+     * 
+     */
+    protected abstract Knowledge make_knowledge();
     
     /**
      * This should be overridden by the implementation to define how to create this sub-component.

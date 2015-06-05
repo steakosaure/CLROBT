@@ -30,6 +30,8 @@ namespace clrobots {
 				provides launchCycle : Do = percevoir.perception	
 				requires finishedCycle: CycleAlert
 				
+				part knowledge: Knowledge
+				
 				part percevoir: Percevoir{
 					bind decision to decider.decision
 					//bind envInfos to envInfosR
@@ -47,7 +49,7 @@ namespace clrobots {
 	
 	component Knowledge {
 		provides getKnowledge: IGetKnowledge
-		requires setKnowledge: ISetKnowledge
+		provides setKnowledge: ISetKnowledge
 		
 	}
 		

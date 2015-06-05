@@ -6,11 +6,6 @@ import clrobots.interfaces.ISetKnowledge;
 @SuppressWarnings("all")
 public abstract class Knowledge {
   public interface Requires {
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public ISetKnowledge setKnowledge();
   }
   
   public interface Component extends Knowledge.Provides {
@@ -22,6 +17,12 @@ public abstract class Knowledge {
      * 
      */
     public IGetKnowledge getKnowledge();
+    
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public ISetKnowledge setKnowledge();
   }
   
   public interface Parts {
@@ -49,8 +50,17 @@ public abstract class Knowledge {
       }
     }
     
+    private void init_setKnowledge() {
+      assert this.setKnowledge == null: "This is a bug.";
+      this.setKnowledge = this.implementation.make_setKnowledge();
+      if (this.setKnowledge == null) {
+      	throw new RuntimeException("make_setKnowledge() in clrobots.Knowledge should not return null.");
+      }
+    }
+    
     protected void initProvidedPorts() {
       init_getKnowledge();
+      init_setKnowledge();
     }
     
     public ComponentImpl(final Knowledge implem, final Knowledge.Requires b, final boolean doInits) {
@@ -73,6 +83,12 @@ public abstract class Knowledge {
     
     public IGetKnowledge getKnowledge() {
       return this.getKnowledge;
+    }
+    
+    private ISetKnowledge setKnowledge;
+    
+    public ISetKnowledge setKnowledge() {
+      return this.setKnowledge;
     }
   }
   
@@ -123,6 +139,13 @@ public abstract class Knowledge {
   protected abstract IGetKnowledge make_getKnowledge();
   
   /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract ISetKnowledge make_setKnowledge();
+  
+  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
@@ -160,5 +183,13 @@ public abstract class Knowledge {
     	_comp.start();
     }
     return _comp;
+  }
+  
+  /**
+   * Use to instantiate a component from this implementation.
+   * 
+   */
+  public Knowledge.Component newComponent() {
+    return this._newComponent(new Knowledge.Requires() {}, true);
   }
 }
