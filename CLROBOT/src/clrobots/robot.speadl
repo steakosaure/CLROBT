@@ -1,11 +1,13 @@
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
 import clrobots.interfaces.ICreateRobot
+import clrobots.interfaces.IGetKnowledge
+import clrobots.interfaces.ISetKnowledge
 import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
 import java.awt.Color
 
-namespace clrobots{
+namespace clrobots {
 	
 	
 	//Composant permettant l'affichage
@@ -14,13 +16,13 @@ namespace clrobots{
 	}
 	
 	
-	ecosystem EcoRobotAgents{
+	ecosystem EcoRobotAgents {
 		
 			requires threads: ITakeThreads
 			provides createRobot: ICreateRobot
 			//requires updateRobotsMap: UpdateRobotsList
 			
-			species Robot(id: String, color: Color){
+			species Robot(id: String, color: Color) {
 				
 				//requires envInfosR: IEnvInfos 
 				//requires interaction: Iinteragir
@@ -33,28 +35,34 @@ namespace clrobots{
 					//bind envInfos to envInfosR
 				}
 				
-				part decider: Decider{
+				part decider: Decider {
 					bind action to agir.action
 				}
-				part agir: Agir{
+				part agir: Agir {
 					bind finishedCycle to finishedCycle
 					//bind interagir to interaction
 			}
 		}
 	}
+	
+	component Knowledge {
+		provides getKnowledge: IGetKnowledge
+		requires setKnowledge: ISetKnowledge
 		
-	component Percevoir{
+	}
+		
+	component Percevoir {
 		provides perception : Do
 		//requires envInfos : IEnvInfos
 		requires decision: Do
 	}
 	
-	component Decider{
+	component Decider {
 		provides decision : Do
 		requires action: Do
 	}
 	
-	component Agir{
+	component Agir {
 		provides action : Do
 		requires finishedCycle : CycleAlert
 		//requires interagir : Iinteragir

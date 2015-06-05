@@ -36,14 +36,12 @@ public class EcoRobotImpl extends EcoRobotAgents implements ICreateRobot {
 
 	@Override
 	protected ICreateRobot make_createRobot() {
-		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 	@Override
 	public void createNewRobot(Color color) {
-		
-		
+		make_Robot("Robot" + listRobot.size(), color);
 	}
 	
 	private class RobotImpl extends Robot implements Runnable{
