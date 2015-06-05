@@ -141,8 +141,8 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					}
 				}
 				
-				/*Si pas de boite et rien en vue alors se déplace aléatoirement */
-				if (boite == null && containingBoxCells.isEmpty()){
+				/*Si j'ai pas de boite et rien en vue alors se déplace aléatoirement */
+				if (boite == null && containingBoxCells.isEmpty() && coord.getStatus() != CellStatus.BOX){
 					int cellIndex = new Random().nextInt(adjacentCells.size());
 					this.requires().action().mooveRobotWithoutBox(id, color, coord.getCoordinates(), adjacentCells.get(cellIndex).getCoordinates());
 				} else if(boite == null){
@@ -184,7 +184,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				
 			}
 			@Override
-			public void takeBox(String idRobot, Color robotColor, Point point) {
+			public void takeBox(String idRobot, Color robotColor, Point oldPoint, Point newPoint) {
 				this.requires().finishedCycle().endOfCycleAlert(idRobot);
 			}
 			@Override
