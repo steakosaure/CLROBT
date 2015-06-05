@@ -123,8 +123,39 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 
 	@Override
 	public List<Cellule> getAdjacentCells(Point robotCoord) {
-		//if()
-		return null;
+		List<Cellule> adjacentCells = new ArrayList<Cellule>();
+		List<Integer> coordX = new ArrayList<Integer>();
+		List<Integer> coordY = new ArrayList<Integer>();
+		
+		if(robotCoord.x != 0) {
+			coordX.add(new Integer(robotCoord.x-1));
+		}
+		
+		if(robotCoord.x != 49) {
+			coordX.add(new Integer(robotCoord.x+1));
+		}
+		
+		if(robotCoord.y != 0) {
+			coordY.add(new Integer(robotCoord.y-1));
+		}
+		
+		if(robotCoord.y != 49) {
+			coordY.add(new Integer(robotCoord.y+1));
+		}
+		
+			
+		for(Integer x : coordX) {
+			adjacentCells.add(new Cellule(new Point(x,robotCoord.y)));
+			
+			for(Integer y: coordY) {
+				adjacentCells.add(new Cellule(new Point(x,y)));
+				
+				if(coordY.indexOf(y) == 0)
+					adjacentCells.add(new Cellule(new Point(robotCoord.x,y)));
+			}
+		}
+		
+		return adjacentCells;
 	}
 
 }
