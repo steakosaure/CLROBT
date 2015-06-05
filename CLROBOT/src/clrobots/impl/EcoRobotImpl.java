@@ -2,9 +2,11 @@ package clrobots.impl;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import robot.impl.AbstractAgir;
 import robot.impl.AbstractDecider;
@@ -20,6 +22,7 @@ import clrobots.interfaces.ICreateRobot;
 import clrobots.interfaces.IRobotKnowledge;
 import clrobots.interfaces.Iinteragir;
 import environnement.Boite;
+import environnement.CellStatus;
 import environnement.Cellule;
 import environnement.interfaces.IEnvInfos;
 
@@ -56,7 +59,8 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 
 		private String id;
 		private Color color;
-		private Point coord;
+		private Cellule coord;
+		private Boite boite;
 		private List<Cellule> adjacentCells;
 		
 		@Override
@@ -66,7 +70,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			}
 		}
 		
-		public RobotImpl(String id, Color color, Point initialPosition, Map<Color, Point> nestsCoord) {
+		public RobotImpl(String id, Color color, Cellule initialPosition, Map<Color, Point> nestsCoord) {
 			this.id = id;
 			this.color = color;
 			this.coord = initialPosition;
@@ -128,7 +132,27 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			@Override
 			public void makeDecision() {
 				System.out.println(id+" : Decision");
-				this.requires().action().mooveRobotWithoutBox("", color, new Point(1,1), new Point(1,2));
+				boolean box = false;
+				List<Cellule> containingBoxCells = new ArrayList<Cellule>();
+				
+				for (Cellule cell : adjacentCells){
+					if (cell.getStatus() == CellStatus.BOX){
+						containingBoxCells.add(cell);
+					}
+				}
+				
+				/*Si pas de boite et rien en vue alors se déplace aléatoirement */
+				if (boite == null && containingBoxCells.isEmpty()){
+					int cellIndex = new Random().nextInt(adjacentCells.size());
+					this.requires().action().mooveRobotWithoutBox(id, color, coord.getCoordinates(), adjacentCells.get(cellIndex).getCoordinates());
+				} else if(boite == null){
+				/*Si pas de boite et boites en vue alors se déplace en direction de la boite de la meme couleur en priorité */
+					
+				}
+				/*Si une boite et rien en vue alors se déplace vers le nid */
+				/*Si une boite pas de la meme couleur et une boite en vue de la meme couleur alors deposer la boite*/
+				
+				//this.requires().action().mooveRobotWithoutBox("", color, new Point(1,1), new Point(1,2));
 				
 			}
 			
