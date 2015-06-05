@@ -102,8 +102,11 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 	}
 
 	@Override
-	public void takeBox(String idRobot, Color robotColor, Point point) {
-		cellList.get(point).robotCaryingBox(idRobot, robotColor, cellList.get(point).getBox());
+	public void takeBox(String idRobot, Color robotColor, Point oldPoint, Point newPoint) {
+		if (cellList.get(newPoint).getStatus() == CellStatus.BOX){
+			cellList.get(oldPoint).setEmpty();
+			cellList.get(newPoint).robotCaryingBox(idRobot, robotColor, cellList.get(newPoint).getBox());
+		}
 	}
 
 	@Override

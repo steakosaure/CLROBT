@@ -37,8 +37,8 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 		}
 
 		@Override
-		public void takeBox(String idRobot, Color robotColor, Point point) {
-			eco_requires().k().takeBox(idRobot, robotColor, point);
+		public void takeBox(String idRobot, Color robotColor, Point oldPoint, Point newPoint) {
+			eco_requires().k().takeBox(idRobot, robotColor, oldPoint, newPoint);
 			
 		}
 
