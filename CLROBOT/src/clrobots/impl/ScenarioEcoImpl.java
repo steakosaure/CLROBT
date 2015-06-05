@@ -2,9 +2,11 @@ package clrobots.impl;
 
 import java.awt.Color;
 
+import ui.interfaces.IUpdateUi;
 import clrobots.EcoRobotAgents;
 import clrobots.Environnement;
 import clrobots.Forward;
+import clrobots.GUI;
 import clrobots.Launcher;
 import clrobots.ScenarioEco;
 import clrobots.interfaces.CycleAlert;
@@ -14,7 +16,7 @@ import environnement.impl.EnvironnementImpl;
 import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 
-public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge> {
+public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge, IUpdateUi> {
 
 	@Override
 	protected EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKnowledge> make_ecoAE() {
@@ -82,8 +84,15 @@ public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit
 	}
 
 	@Override
-	protected Environnement<Iinteragir, IEnvInfos, IEnvInit> make_environnement() {
+	protected Environnement<Iinteragir, IEnvInfos, IEnvInit, IUpdateUi> make_environnement() {
+		// TODO Auto-generated method stub
 		return new EnvironnementImpl();
+	}
+
+	@Override
+	protected GUI<IUpdateUi> make_gui() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

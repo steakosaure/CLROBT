@@ -1,0 +1,7 @@
+namespace clrobots{
+	
+		component GUI[UpdateGUI]{
+			provides updateGUI: UpdateGUI
+		}
+	
+}

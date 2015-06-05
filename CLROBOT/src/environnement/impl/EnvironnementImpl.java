@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import ui.interfaces.IUpdateUi;
 import clrobots.Environnement;
 import clrobots.interfaces.IRobotKnowledge;
 import clrobots.interfaces.Iinteragir;
@@ -18,7 +19,7 @@ import environnement.Nest;
 import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 
-public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnvInit> implements IEnvInfos, Iinteragir, IEnvInit{
+public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnvInit, IUpdateUi> implements IEnvInfos, Iinteragir, IEnvInit, IUpdateUi{
 	
 	private List<Boite> boiteList = new ArrayList<Boite>();
 	private Map<Point, Cellule> cellList = new HashMap<Point, Cellule>();
@@ -159,6 +160,12 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 		}
 		
 		return adjacentCells;
+	}
+
+	@Override
+	public void rien() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

@@ -6,9 +6,7 @@ import java.awt.Color
 
 namespace clrobots{
 	
-	component GUI{
-		
-	}
+
 	
 	ecosystem ForwardLauncher{
 		species AgentForward{
@@ -26,8 +24,13 @@ namespace clrobots{
 		provides threads: ITakeThreads 
 	}
 	
-	ecosystem ScenarioEco[Actionable, Context, ContextInit, SelfKnowledge]{
-		part environnement: Environnement[Actionable, Context, ContextInit]
+	ecosystem ScenarioEco[Actionable, Context, ContextInit, SelfKnowledge, UpdateOutput]{
+		
+		part environnement: Environnement[Actionable, Context, ContextInit, UpdateOutput] {
+			bind updateOutput to gui.updateGUI
+		}
+		
+		part gui: GUI[UpdateOutput]
 		
 		part ecoAE: EcoRobotAgents[Actionable, Context, SelfKnowledge]{
 			bind threads to launcher.threads

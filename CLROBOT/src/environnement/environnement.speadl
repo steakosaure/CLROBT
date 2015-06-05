@@ -5,8 +5,8 @@ import clrobots.interfaces.Iinteragir
 
 namespace clrobots{
 	//Composant contenant l'environnement 
-	component Environnement [Actionable, Context, ContextInit]{
-		//requires updateUi: IUpdateUi
+	component Environnement [Actionable, Context, ContextInit, UpdateOutput]{
+		requires updateOutput: UpdateOutput
 		provides interagir : Actionable
 		provides envInfos: Context
 		provides envInit: ContextInit

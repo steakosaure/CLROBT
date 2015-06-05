@@ -1,23 +1,28 @@
 package clrobots;
 
 @SuppressWarnings("all")
-public class GUI {
-  public interface Requires {
+public abstract class GUI<UpdateGUI> {
+  public interface Requires<UpdateGUI> {
   }
   
-  public interface Component extends GUI.Provides {
+  public interface Component<UpdateGUI> extends GUI.Provides<UpdateGUI> {
   }
   
-  public interface Provides {
+  public interface Provides<UpdateGUI> {
+    /**
+     * This can be called to access the provided port.
+     * 
+     */
+    public UpdateGUI updateGUI();
   }
   
-  public interface Parts {
+  public interface Parts<UpdateGUI> {
   }
   
-  public static class ComponentImpl implements GUI.Component, GUI.Parts {
-    private final GUI.Requires bridge;
+  public static class ComponentImpl<UpdateGUI> implements GUI.Component<UpdateGUI>, GUI.Parts<UpdateGUI> {
+    private final GUI.Requires<UpdateGUI> bridge;
     
-    private final GUI implementation;
+    private final GUI<UpdateGUI> implementation;
     
     public void start() {
       this.implementation.start();
@@ -28,11 +33,19 @@ public class GUI {
       
     }
     
-    protected void initProvidedPorts() {
-      
+    private void init_updateGUI() {
+      assert this.updateGUI == null: "This is a bug.";
+      this.updateGUI = this.implementation.make_updateGUI();
+      if (this.updateGUI == null) {
+      	throw new RuntimeException("make_updateGUI() in clrobots.GUI<UpdateGUI> should not return null.");
+      }
     }
     
-    public ComponentImpl(final GUI implem, final GUI.Requires b, final boolean doInits) {
+    protected void initProvidedPorts() {
+      init_updateGUI();
+    }
+    
+    public ComponentImpl(final GUI<UpdateGUI> implem, final GUI.Requires<UpdateGUI> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -46,6 +59,12 @@ public class GUI {
       	initParts();
       	initProvidedPorts();
       }
+    }
+    
+    private UpdateGUI updateGUI;
+    
+    public UpdateGUI updateGUI() {
+      return this.updateGUI;
     }
   }
   
@@ -63,7 +82,7 @@ public class GUI {
    */
   private boolean started = false;;
   
-  private GUI.ComponentImpl selfComponent;
+  private GUI.ComponentImpl<UpdateGUI> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -80,7 +99,7 @@ public class GUI {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected GUI.Provides provides() {
+  protected GUI.Provides<UpdateGUI> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -89,10 +108,17 @@ public class GUI {
   }
   
   /**
+   * This should be overridden by the implementation to define the provided port.
+   * This will be called once during the construction of the component to initialize the port.
+   * 
+   */
+  protected abstract UpdateGUI make_updateGUI();
+  
+  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected GUI.Requires requires() {
+  protected GUI.Requires<UpdateGUI> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -104,7 +130,7 @@ public class GUI {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected GUI.Parts parts() {
+  protected GUI.Parts<UpdateGUI> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -116,12 +142,12 @@ public class GUI {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized GUI.Component _newComponent(final GUI.Requires b, final boolean start) {
+  public synchronized GUI.Component<UpdateGUI> _newComponent(final GUI.Requires<UpdateGUI> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of GUI has already been used to create a component, use another one.");
     }
     this.init = true;
-    GUI.ComponentImpl  _comp = new GUI.ComponentImpl(this, b, true);
+    GUI.ComponentImpl<UpdateGUI>  _comp = new GUI.ComponentImpl<UpdateGUI>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -132,7 +158,7 @@ public class GUI {
    * Use to instantiate a component from this implementation.
    * 
    */
-  public GUI.Component newComponent() {
-    return this._newComponent(new GUI.Requires() {}, true);
+  public GUI.Component<UpdateGUI> newComponent() {
+    return this._newComponent(new GUI.Requires<UpdateGUI>() {}, true);
   }
 }
