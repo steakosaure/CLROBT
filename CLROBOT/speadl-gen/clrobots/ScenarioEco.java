@@ -1,6 +1,7 @@
 package clrobots;
 
 import clrobots.EcoRobotAgents;
+import clrobots.Environnement;
 import clrobots.Forward;
 import clrobots.Launcher;
 import clrobots.interfaces.CycleAlert;
@@ -8,30 +9,37 @@ import clrobots.interfaces.ITakeThreads;
 import java.awt.Color;
 
 @SuppressWarnings("all")
-public abstract class ScenarioEco {
-  public interface Requires {
+public abstract class ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> {
+  public interface Requires<Actionable, Context, ContextInit, SelfKnowledge> {
   }
   
-  public interface Component extends ScenarioEco.Provides {
+  public interface Component<Actionable, Context, ContextInit, SelfKnowledge> extends ScenarioEco.Provides<Actionable, Context, ContextInit, SelfKnowledge> {
   }
   
-  public interface Provides {
+  public interface Provides<Actionable, Context, ContextInit, SelfKnowledge> {
   }
   
-  public interface Parts {
+  public interface Parts<Actionable, Context, ContextInit, SelfKnowledge> {
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public EcoRobotAgents.Component ecoAE();
+    public Environnement.Component<Actionable, Context, ContextInit> environnement();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public Forward.Component<CycleAlert> fw();
+    public EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE();
+    
+    /**
+     * This can be called by the implementation to access the part and its provided ports.
+     * It will be initialized after the required ports are initialized and before the provided ports are initialized.
+     * 
+     */
+    public Forward.Component<CycleAlert, Context, Actionable> fw();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
@@ -41,20 +49,33 @@ public abstract class ScenarioEco {
     public Launcher.Component launcher();
   }
   
-  public static class ComponentImpl implements ScenarioEco.Component, ScenarioEco.Parts {
-    private final ScenarioEco.Requires bridge;
+  public static class ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge> implements ScenarioEco.Component<Actionable, Context, ContextInit, SelfKnowledge>, ScenarioEco.Parts<Actionable, Context, ContextInit, SelfKnowledge> {
+    private final ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge> bridge;
     
-    private final ScenarioEco implementation;
+    private final ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> implementation;
     
     public void start() {
+      assert this.environnement != null: "This is a bug.";
+      ((Environnement.ComponentImpl<Actionable, Context, ContextInit>) this.environnement).start();
       assert this.ecoAE != null: "This is a bug.";
-      ((EcoRobotAgents.ComponentImpl) this.ecoAE).start();
+      ((EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge>) this.ecoAE).start();
       assert this.fw != null: "This is a bug.";
-      ((Forward.ComponentImpl<CycleAlert>) this.fw).start();
+      ((Forward.ComponentImpl<CycleAlert, Context, Actionable>) this.fw).start();
       assert this.launcher != null: "This is a bug.";
       ((Launcher.ComponentImpl) this.launcher).start();
       this.implementation.start();
       this.implementation.started = true;
+    }
+    
+    private void init_environnement() {
+      assert this.environnement == null: "This is a bug.";
+      assert this.implem_environnement == null: "This is a bug.";
+      this.implem_environnement = this.implementation.make_environnement();
+      if (this.implem_environnement == null) {
+      	throw new RuntimeException("make_environnement() in clrobots.ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> should not return null.");
+      }
+      this.environnement = this.implem_environnement._newComponent(new BridgeImpl_environnement(), false);
+      
     }
     
     private void init_ecoAE() {
@@ -62,7 +83,7 @@ public abstract class ScenarioEco {
       assert this.implem_ecoAE == null: "This is a bug.";
       this.implem_ecoAE = this.implementation.make_ecoAE();
       if (this.implem_ecoAE == null) {
-      	throw new RuntimeException("make_ecoAE() in clrobots.ScenarioEco should not return null.");
+      	throw new RuntimeException("make_ecoAE() in clrobots.ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> should not return null.");
       }
       this.ecoAE = this.implem_ecoAE._newComponent(new BridgeImpl_ecoAE(), false);
       
@@ -73,7 +94,7 @@ public abstract class ScenarioEco {
       assert this.implem_fw == null: "This is a bug.";
       this.implem_fw = this.implementation.make_fw();
       if (this.implem_fw == null) {
-      	throw new RuntimeException("make_fw() in clrobots.ScenarioEco should not return null.");
+      	throw new RuntimeException("make_fw() in clrobots.ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> should not return null.");
       }
       this.fw = this.implem_fw._newComponent(new BridgeImpl_fw(), false);
       
@@ -84,13 +105,14 @@ public abstract class ScenarioEco {
       assert this.implem_launcher == null: "This is a bug.";
       this.implem_launcher = this.implementation.make_launcher();
       if (this.implem_launcher == null) {
-      	throw new RuntimeException("make_launcher() in clrobots.ScenarioEco should not return null.");
+      	throw new RuntimeException("make_launcher() in clrobots.ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> should not return null.");
       }
       this.launcher = this.implem_launcher._newComponent(new BridgeImpl_launcher(), false);
       
     }
     
     protected void initParts() {
+      init_environnement();
       init_ecoAE();
       init_fw();
       init_launcher();
@@ -100,7 +122,7 @@ public abstract class ScenarioEco {
       
     }
     
-    public ComponentImpl(final ScenarioEco implem, final ScenarioEco.Requires b, final boolean doInits) {
+    public ComponentImpl(final ScenarioEco<Actionable, Context, ContextInit, SelfKnowledge> implem, final ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -116,31 +138,50 @@ public abstract class ScenarioEco {
       }
     }
     
-    private EcoRobotAgents.Component ecoAE;
+    private Environnement.Component<Actionable, Context, ContextInit> environnement;
     
-    private EcoRobotAgents implem_ecoAE;
+    private Environnement<Actionable, Context, ContextInit> implem_environnement;
     
-    private final class BridgeImpl_ecoAE implements EcoRobotAgents.Requires {
+    private final class BridgeImpl_environnement implements Environnement.Requires<Actionable, Context, ContextInit> {
+    }
+    
+    public final Environnement.Component<Actionable, Context, ContextInit> environnement() {
+      return this.environnement;
+    }
+    
+    private EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE;
+    
+    private EcoRobotAgents<Actionable, Context, SelfKnowledge> implem_ecoAE;
+    
+    private final class BridgeImpl_ecoAE implements EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> {
       public final ITakeThreads threads() {
         return ScenarioEco.ComponentImpl.this.launcher().threads();
       }
     }
     
-    public final EcoRobotAgents.Component ecoAE() {
+    public final EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE() {
       return this.ecoAE;
     }
     
-    private Forward.Component<CycleAlert> fw;
+    private Forward.Component<CycleAlert, Context, Actionable> fw;
     
-    private Forward<CycleAlert> implem_fw;
+    private Forward<CycleAlert, Context, Actionable> implem_fw;
     
-    private final class BridgeImpl_fw implements Forward.Requires<CycleAlert> {
+    private final class BridgeImpl_fw implements Forward.Requires<CycleAlert, Context, Actionable> {
       public final CycleAlert i() {
         return ScenarioEco.ComponentImpl.this.launcher().finishedCycle();
       }
+      
+      public final Context j() {
+        return ScenarioEco.ComponentImpl.this.environnement().envInfos();
+      }
+      
+      public final Actionable k() {
+        return ScenarioEco.ComponentImpl.this.environnement().interagir();
+      }
     }
     
-    public final Forward.Component<CycleAlert> fw() {
+    public final Forward.Component<CycleAlert, Context, Actionable> fw() {
       return this.fw;
     }
     
@@ -156,42 +197,42 @@ public abstract class ScenarioEco {
     }
   }
   
-  public static class DynamicAssembly {
-    public interface Requires {
+  public static class DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> {
+    public interface Requires<Actionable, Context, ContextInit, SelfKnowledge> {
     }
     
-    public interface Component extends ScenarioEco.DynamicAssembly.Provides {
+    public interface Component<Actionable, Context, ContextInit, SelfKnowledge> extends ScenarioEco.DynamicAssembly.Provides<Actionable, Context, ContextInit, SelfKnowledge> {
     }
     
-    public interface Provides {
+    public interface Provides<Actionable, Context, ContextInit, SelfKnowledge> {
     }
     
-    public interface Parts {
+    public interface Parts<Actionable, Context, ContextInit, SelfKnowledge> {
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public EcoRobotAgents.Robot.Component agentE();
+      public EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Forward.Agent.Component<CycleAlert> aFW();
+      public Forward.Agent.Component<CycleAlert, Context, Actionable> aFW();
     }
     
-    public static class ComponentImpl implements ScenarioEco.DynamicAssembly.Component, ScenarioEco.DynamicAssembly.Parts {
-      private final ScenarioEco.DynamicAssembly.Requires bridge;
+    public static class ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge> implements ScenarioEco.DynamicAssembly.Component<Actionable, Context, ContextInit, SelfKnowledge>, ScenarioEco.DynamicAssembly.Parts<Actionable, Context, ContextInit, SelfKnowledge> {
+      private final ScenarioEco.DynamicAssembly.Requires<Actionable, Context, ContextInit, SelfKnowledge> bridge;
       
-      private final ScenarioEco.DynamicAssembly implementation;
+      private final ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> implementation;
       
       public void start() {
         assert this.agentE != null: "This is a bug.";
-        ((EcoRobotAgents.Robot.ComponentImpl) this.agentE).start();
+        ((EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge>) this.agentE).start();
         assert this.aFW != null: "This is a bug.";
-        ((Forward.Agent.ComponentImpl<CycleAlert>) this.aFW).start();
+        ((Forward.Agent.ComponentImpl<CycleAlert, Context, Actionable>) this.aFW).start();
         this.implementation.start();
         this.implementation.started = true;
       }
@@ -219,7 +260,7 @@ public abstract class ScenarioEco {
         
       }
       
-      public ComponentImpl(final ScenarioEco.DynamicAssembly implem, final ScenarioEco.DynamicAssembly.Requires b, final boolean doInits) {
+      public ComponentImpl(final ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> implem, final ScenarioEco.DynamicAssembly.Requires<Actionable, Context, ContextInit, SelfKnowledge> b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -235,24 +276,32 @@ public abstract class ScenarioEco {
         }
       }
       
-      private EcoRobotAgents.Robot.Component agentE;
+      private EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE;
       
-      private final class BridgeImpl_ecoAE_agentE implements EcoRobotAgents.Robot.Requires {
+      private final class BridgeImpl_ecoAE_agentE implements EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> {
         public final CycleAlert finishedCycle() {
           return ScenarioEco.DynamicAssembly.ComponentImpl.this.aFW().a();
         }
+        
+        public final Actionable envInteraction() {
+          return ScenarioEco.DynamicAssembly.ComponentImpl.this.aFW().c();
+        }
+        
+        public final Context envContext() {
+          return ScenarioEco.DynamicAssembly.ComponentImpl.this.aFW().b();
+        }
       }
       
-      public final EcoRobotAgents.Robot.Component agentE() {
+      public final EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE() {
         return this.agentE;
       }
       
-      private Forward.Agent.Component<CycleAlert> aFW;
+      private Forward.Agent.Component<CycleAlert, Context, Actionable> aFW;
       
-      private final class BridgeImpl_fw_aFW implements Forward.Agent.Requires<CycleAlert> {
+      private final class BridgeImpl_fw_aFW implements Forward.Agent.Requires<CycleAlert, Context, Actionable> {
       }
       
-      public final Forward.Agent.Component<CycleAlert> aFW() {
+      public final Forward.Agent.Component<CycleAlert, Context, Actionable> aFW() {
         return this.aFW;
       }
     }
@@ -271,7 +320,7 @@ public abstract class ScenarioEco {
      */
     private boolean started = false;;
     
-    private ScenarioEco.DynamicAssembly.ComponentImpl selfComponent;
+    private ScenarioEco.DynamicAssembly.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge> selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -288,7 +337,7 @@ public abstract class ScenarioEco {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected ScenarioEco.DynamicAssembly.Provides provides() {
+    protected ScenarioEco.DynamicAssembly.Provides<Actionable, Context, ContextInit, SelfKnowledge> provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -300,7 +349,7 @@ public abstract class ScenarioEco {
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected ScenarioEco.DynamicAssembly.Requires requires() {
+    protected ScenarioEco.DynamicAssembly.Requires<Actionable, Context, ContextInit, SelfKnowledge> requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -312,7 +361,7 @@ public abstract class ScenarioEco {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected ScenarioEco.DynamicAssembly.Parts parts() {
+    protected ScenarioEco.DynamicAssembly.Parts<Actionable, Context, ContextInit, SelfKnowledge> parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -320,33 +369,33 @@ public abstract class ScenarioEco {
       return this.selfComponent;
     }
     
-    private EcoRobotAgents.Robot use_agentE;
+    private EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> use_agentE;
     
-    private Forward.Agent<CycleAlert> use_aFW;
+    private Forward.Agent<CycleAlert, Context, Actionable> use_aFW;
     
     /**
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized ScenarioEco.DynamicAssembly.Component _newComponent(final ScenarioEco.DynamicAssembly.Requires b, final boolean start) {
+    public synchronized ScenarioEco.DynamicAssembly.Component<Actionable, Context, ContextInit, SelfKnowledge> _newComponent(final ScenarioEco.DynamicAssembly.Requires<Actionable, Context, ContextInit, SelfKnowledge> b, final boolean start) {
       if (this.init) {
       	throw new RuntimeException("This instance of DynamicAssembly has already been used to create a component, use another one.");
       }
       this.init = true;
-      ScenarioEco.DynamicAssembly.ComponentImpl  _comp = new ScenarioEco.DynamicAssembly.ComponentImpl(this, b, true);
+      ScenarioEco.DynamicAssembly.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge>  _comp = new ScenarioEco.DynamicAssembly.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge>(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private ScenarioEco.ComponentImpl ecosystemComponent;
+    private ScenarioEco.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge> ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected ScenarioEco.Provides eco_provides() {
+    protected ScenarioEco.Provides<Actionable, Context, ContextInit, SelfKnowledge> eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -355,7 +404,7 @@ public abstract class ScenarioEco {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected ScenarioEco.Requires eco_requires() {
+    protected ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge> eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -364,7 +413,7 @@ public abstract class ScenarioEco {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected ScenarioEco.Parts eco_parts() {
+    protected ScenarioEco.Parts<Actionable, Context, ContextInit, SelfKnowledge> eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -384,7 +433,7 @@ public abstract class ScenarioEco {
    */
   private boolean started = false;;
   
-  private ScenarioEco.ComponentImpl selfComponent;
+  private ScenarioEco.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -401,7 +450,7 @@ public abstract class ScenarioEco {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected ScenarioEco.Provides provides() {
+  protected ScenarioEco.Provides<Actionable, Context, ContextInit, SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -413,7 +462,7 @@ public abstract class ScenarioEco {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected ScenarioEco.Requires requires() {
+  protected ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -425,7 +474,7 @@ public abstract class ScenarioEco {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected ScenarioEco.Parts parts() {
+  protected ScenarioEco.Parts<Actionable, Context, ContextInit, SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -438,14 +487,21 @@ public abstract class ScenarioEco {
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract EcoRobotAgents make_ecoAE();
+  protected abstract Environnement<Actionable, Context, ContextInit> make_environnement();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract Forward<CycleAlert> make_fw();
+  protected abstract EcoRobotAgents<Actionable, Context, SelfKnowledge> make_ecoAE();
+  
+  /**
+   * This should be overridden by the implementation to define how to create this sub-component.
+   * This will be called once during the construction of the component to initialize this sub-component.
+   * 
+   */
+  protected abstract Forward<CycleAlert, Context, Actionable> make_fw();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.
@@ -458,12 +514,12 @@ public abstract class ScenarioEco {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized ScenarioEco.Component _newComponent(final ScenarioEco.Requires b, final boolean start) {
+  public synchronized ScenarioEco.Component<Actionable, Context, ContextInit, SelfKnowledge> _newComponent(final ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of ScenarioEco has already been used to create a component, use another one.");
     }
     this.init = true;
-    ScenarioEco.ComponentImpl  _comp = new ScenarioEco.ComponentImpl(this, b, true);
+    ScenarioEco.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge>  _comp = new ScenarioEco.ComponentImpl<Actionable, Context, ContextInit, SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -474,16 +530,16 @@ public abstract class ScenarioEco {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected ScenarioEco.DynamicAssembly make_DynamicAssembly(final String id, final Color color) {
-    return new ScenarioEco.DynamicAssembly();
+  protected ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> make_DynamicAssembly(final String id, final Color color) {
+    return new ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge>();
   }
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public ScenarioEco.DynamicAssembly _createImplementationOfDynamicAssembly(final String id, final Color color) {
-    ScenarioEco.DynamicAssembly implem = make_DynamicAssembly(id,color);
+  public ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> _createImplementationOfDynamicAssembly(final String id, final Color color) {
+    ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> implem = make_DynamicAssembly(id,color);
     if (implem == null) {
     	throw new RuntimeException("make_DynamicAssembly() in clrobots.ScenarioEco should not return null.");
     }
@@ -503,16 +559,16 @@ public abstract class ScenarioEco {
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected ScenarioEco.DynamicAssembly.Component newDynamicAssembly(final String id, final Color color) {
-    ScenarioEco.DynamicAssembly _implem = _createImplementationOfDynamicAssembly(id,color);
-    return _implem._newComponent(new ScenarioEco.DynamicAssembly.Requires() {},true);
+  protected ScenarioEco.DynamicAssembly.Component<Actionable, Context, ContextInit, SelfKnowledge> newDynamicAssembly(final String id, final Color color) {
+    ScenarioEco.DynamicAssembly<Actionable, Context, ContextInit, SelfKnowledge> _implem = _createImplementationOfDynamicAssembly(id,color);
+    return _implem._newComponent(new ScenarioEco.DynamicAssembly.Requires<Actionable, Context, ContextInit, SelfKnowledge>() {},true);
   }
   
   /**
    * Use to instantiate a component from this implementation.
    * 
    */
-  public ScenarioEco.Component newComponent() {
-    return this._newComponent(new ScenarioEco.Requires() {}, true);
+  public ScenarioEco.Component<Actionable, Context, ContextInit, SelfKnowledge> newComponent() {
+    return this._newComponent(new ScenarioEco.Requires<Actionable, Context, ContextInit, SelfKnowledge>() {}, true);
   }
 }

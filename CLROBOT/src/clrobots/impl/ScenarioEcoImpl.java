@@ -3,20 +3,26 @@ package clrobots.impl;
 import java.awt.Color;
 
 import clrobots.EcoRobotAgents;
+import clrobots.Environnement;
 import clrobots.Forward;
 import clrobots.Launcher;
 import clrobots.ScenarioEco;
 import clrobots.interfaces.CycleAlert;
+import clrobots.interfaces.IRobotKnowledge;
+import clrobots.interfaces.Iinteragir;
+import environnement.impl.EnvironnementImpl;
+import environnement.interfaces.IEnvInfos;
+import environnement.interfaces.IEnvInit;
 
-public class ScenarioEcoImpl extends ScenarioEco	 {
+public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge> {
 
 	@Override
-	protected EcoRobotAgents make_ecoAE() {
+	protected EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKnowledge> make_ecoAE() {
 		return new EcoRobotImpl();
 	}
 
 	@Override
-	protected Forward<CycleAlert> make_fw() {
+	protected Forward< CycleAlert, IEnvInfos, Iinteragir> make_fw() {
 		// TODO Auto-generated method stub
 		return new ForwardILauncherRobotmpl();
 	}
@@ -73,6 +79,11 @@ public class ScenarioEcoImpl extends ScenarioEco	 {
 			
 		});
 		t.start();
+	}
+
+	@Override
+	protected Environnement<Iinteragir, IEnvInfos, IEnvInit> make_environnement() {
+		return new EnvironnementImpl();
 	}
 
 }

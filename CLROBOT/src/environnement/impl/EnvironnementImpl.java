@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Random;
 
 import clrobots.Environnement;
+import clrobots.interfaces.IRobotKnowledge;
 import clrobots.interfaces.Iinteragir;
 import environnement.Boite;
 import environnement.CellStatus;
@@ -17,7 +18,7 @@ import environnement.Nest;
 import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 
-public class EnvironnementImpl extends Environnement implements IEnvInfos, Iinteragir, IEnvInit{
+public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnvInit> implements IEnvInfos, Iinteragir, IEnvInit{
 	
 	private List<Boite> boiteList = new ArrayList<Boite>();
 	private Map<Point, Cellule> cellList = new HashMap<Point, Cellule>();

@@ -11,8 +11,8 @@ import clrobots.interfaces.ITakeThreads;
 import java.awt.Color;
 
 @SuppressWarnings("all")
-public abstract class EcoRobotAgents {
-  public interface Requires {
+public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
+  public interface Requires<Actionable, Context, SelfKnowledge> {
     /**
      * This can be called by the implementation to access this required port.
      * 
@@ -20,10 +20,10 @@ public abstract class EcoRobotAgents {
     public ITakeThreads threads();
   }
   
-  public interface Component extends EcoRobotAgents.Provides {
+  public interface Component<Actionable, Context, SelfKnowledge> extends EcoRobotAgents.Provides<Actionable, Context, SelfKnowledge> {
   }
   
-  public interface Provides {
+  public interface Provides<Actionable, Context, SelfKnowledge> {
     /**
      * This can be called to access the provided port.
      * 
@@ -31,13 +31,13 @@ public abstract class EcoRobotAgents {
     public ICreateRobot createRobot();
   }
   
-  public interface Parts {
+  public interface Parts<Actionable, Context, SelfKnowledge> {
   }
   
-  public static class ComponentImpl implements EcoRobotAgents.Component, EcoRobotAgents.Parts {
-    private final EcoRobotAgents.Requires bridge;
+  public static class ComponentImpl<Actionable, Context, SelfKnowledge> implements EcoRobotAgents.Component<Actionable, Context, SelfKnowledge>, EcoRobotAgents.Parts<Actionable, Context, SelfKnowledge> {
+    private final EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> bridge;
     
-    private final EcoRobotAgents implementation;
+    private final EcoRobotAgents<Actionable, Context, SelfKnowledge> implementation;
     
     public void start() {
       this.implementation.start();
@@ -52,7 +52,7 @@ public abstract class EcoRobotAgents {
       assert this.createRobot == null: "This is a bug.";
       this.createRobot = this.implementation.make_createRobot();
       if (this.createRobot == null) {
-      	throw new RuntimeException("make_createRobot() in clrobots.EcoRobotAgents should not return null.");
+      	throw new RuntimeException("make_createRobot() in clrobots.EcoRobotAgents<Actionable, Context, SelfKnowledge> should not return null.");
       }
     }
     
@@ -60,7 +60,7 @@ public abstract class EcoRobotAgents {
       init_createRobot();
     }
     
-    public ComponentImpl(final EcoRobotAgents implem, final EcoRobotAgents.Requires b, final boolean doInits) {
+    public ComponentImpl(final EcoRobotAgents<Actionable, Context, SelfKnowledge> implem, final EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -83,8 +83,20 @@ public abstract class EcoRobotAgents {
     }
   }
   
-  public static abstract class Robot {
-    public interface Requires {
+  public static abstract class Robot<Actionable, Context, SelfKnowledge> {
+    public interface Requires<Actionable, Context, SelfKnowledge> {
+      /**
+       * This can be called by the implementation to access this required port.
+       * 
+       */
+      public Actionable envInteraction();
+      
+      /**
+       * This can be called by the implementation to access this required port.
+       * 
+       */
+      public Context envContext();
+      
       /**
        * This can be called by the implementation to access this required port.
        * 
@@ -92,10 +104,10 @@ public abstract class EcoRobotAgents {
       public CycleAlert finishedCycle();
     }
     
-    public interface Component extends EcoRobotAgents.Robot.Provides {
+    public interface Component<Actionable, Context, SelfKnowledge> extends EcoRobotAgents.Robot.Provides<Actionable, Context, SelfKnowledge> {
     }
     
-    public interface Provides {
+    public interface Provides<Actionable, Context, SelfKnowledge> {
       /**
        * This can be called to access the provided port.
        * 
@@ -103,50 +115,50 @@ public abstract class EcoRobotAgents {
       public Do launchCycle();
     }
     
-    public interface Parts {
+    public interface Parts<Actionable, Context, SelfKnowledge> {
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Knowledge.Component knowledge();
+      public Knowledge.Component<SelfKnowledge> knowledge();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Percevoir.Component percevoir();
+      public Percevoir.Component<Context, SelfKnowledge> percevoir();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Decider.Component decider();
+      public Decider.Component<Actionable> decider();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Agir.Component agir();
+      public Agir.Component<Actionable, SelfKnowledge> agir();
     }
     
-    public static class ComponentImpl implements EcoRobotAgents.Robot.Component, EcoRobotAgents.Robot.Parts {
-      private final EcoRobotAgents.Robot.Requires bridge;
+    public static class ComponentImpl<Actionable, Context, SelfKnowledge> implements EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge>, EcoRobotAgents.Robot.Parts<Actionable, Context, SelfKnowledge> {
+      private final EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> bridge;
       
-      private final EcoRobotAgents.Robot implementation;
+      private final EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> implementation;
       
       public void start() {
         assert this.knowledge != null: "This is a bug.";
-        ((Knowledge.ComponentImpl) this.knowledge).start();
+        ((Knowledge.ComponentImpl<SelfKnowledge>) this.knowledge).start();
         assert this.percevoir != null: "This is a bug.";
-        ((Percevoir.ComponentImpl) this.percevoir).start();
+        ((Percevoir.ComponentImpl<Context, SelfKnowledge>) this.percevoir).start();
         assert this.decider != null: "This is a bug.";
-        ((Decider.ComponentImpl) this.decider).start();
+        ((Decider.ComponentImpl<Actionable>) this.decider).start();
         assert this.agir != null: "This is a bug.";
-        ((Agir.ComponentImpl) this.agir).start();
+        ((Agir.ComponentImpl<Actionable, SelfKnowledge>) this.agir).start();
         this.implementation.start();
         this.implementation.started = true;
       }
@@ -156,7 +168,7 @@ public abstract class EcoRobotAgents {
         assert this.implem_knowledge == null: "This is a bug.";
         this.implem_knowledge = this.implementation.make_knowledge();
         if (this.implem_knowledge == null) {
-        	throw new RuntimeException("make_knowledge() in clrobots.EcoRobotAgents$Robot should not return null.");
+        	throw new RuntimeException("make_knowledge() in clrobots.EcoRobotAgents$Robot<Actionable, Context, SelfKnowledge> should not return null.");
         }
         this.knowledge = this.implem_knowledge._newComponent(new BridgeImpl_knowledge(), false);
         
@@ -167,7 +179,7 @@ public abstract class EcoRobotAgents {
         assert this.implem_percevoir == null: "This is a bug.";
         this.implem_percevoir = this.implementation.make_percevoir();
         if (this.implem_percevoir == null) {
-        	throw new RuntimeException("make_percevoir() in clrobots.EcoRobotAgents$Robot should not return null.");
+        	throw new RuntimeException("make_percevoir() in clrobots.EcoRobotAgents$Robot<Actionable, Context, SelfKnowledge> should not return null.");
         }
         this.percevoir = this.implem_percevoir._newComponent(new BridgeImpl_percevoir(), false);
         
@@ -178,7 +190,7 @@ public abstract class EcoRobotAgents {
         assert this.implem_decider == null: "This is a bug.";
         this.implem_decider = this.implementation.make_decider();
         if (this.implem_decider == null) {
-        	throw new RuntimeException("make_decider() in clrobots.EcoRobotAgents$Robot should not return null.");
+        	throw new RuntimeException("make_decider() in clrobots.EcoRobotAgents$Robot<Actionable, Context, SelfKnowledge> should not return null.");
         }
         this.decider = this.implem_decider._newComponent(new BridgeImpl_decider(), false);
         
@@ -189,7 +201,7 @@ public abstract class EcoRobotAgents {
         assert this.implem_agir == null: "This is a bug.";
         this.implem_agir = this.implementation.make_agir();
         if (this.implem_agir == null) {
-        	throw new RuntimeException("make_agir() in clrobots.EcoRobotAgents$Robot should not return null.");
+        	throw new RuntimeException("make_agir() in clrobots.EcoRobotAgents$Robot<Actionable, Context, SelfKnowledge> should not return null.");
         }
         this.agir = this.implem_agir._newComponent(new BridgeImpl_agir(), false);
         
@@ -206,7 +218,7 @@ public abstract class EcoRobotAgents {
         
       }
       
-      public ComponentImpl(final EcoRobotAgents.Robot implem, final EcoRobotAgents.Robot.Requires b, final boolean doInits) {
+      public ComponentImpl(final EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> implem, final EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -226,56 +238,72 @@ public abstract class EcoRobotAgents {
         return this.percevoir().perception();
       }
       
-      private Knowledge.Component knowledge;
+      private Knowledge.Component<SelfKnowledge> knowledge;
       
-      private Knowledge implem_knowledge;
+      private Knowledge<SelfKnowledge> implem_knowledge;
       
-      private final class BridgeImpl_knowledge implements Knowledge.Requires {
+      private final class BridgeImpl_knowledge implements Knowledge.Requires<SelfKnowledge> {
       }
       
-      public final Knowledge.Component knowledge() {
+      public final Knowledge.Component<SelfKnowledge> knowledge() {
         return this.knowledge;
       }
       
-      private Percevoir.Component percevoir;
+      private Percevoir.Component<Context, SelfKnowledge> percevoir;
       
-      private Percevoir implem_percevoir;
+      private Percevoir<Context, SelfKnowledge> implem_percevoir;
       
-      private final class BridgeImpl_percevoir implements Percevoir.Requires {
+      private final class BridgeImpl_percevoir implements Percevoir.Requires<Context, SelfKnowledge> {
         public final Do decision() {
           return EcoRobotAgents.Robot.ComponentImpl.this.decider().decision();
         }
+        
+        public final SelfKnowledge knowledge() {
+          return EcoRobotAgents.Robot.ComponentImpl.this.knowledge().selfKnowledge();
+        }
+        
+        public final Context context() {
+          return EcoRobotAgents.Robot.ComponentImpl.this.bridge.envContext();
+        }
       }
       
-      public final Percevoir.Component percevoir() {
+      public final Percevoir.Component<Context, SelfKnowledge> percevoir() {
         return this.percevoir;
       }
       
-      private Decider.Component decider;
+      private Decider.Component<Actionable> decider;
       
-      private Decider implem_decider;
+      private Decider<Actionable> implem_decider;
       
-      private final class BridgeImpl_decider implements Decider.Requires {
-        public final Do action() {
+      private final class BridgeImpl_decider implements Decider.Requires<Actionable> {
+        public final Actionable action() {
           return EcoRobotAgents.Robot.ComponentImpl.this.agir().action();
         }
       }
       
-      public final Decider.Component decider() {
+      public final Decider.Component<Actionable> decider() {
         return this.decider;
       }
       
-      private Agir.Component agir;
+      private Agir.Component<Actionable, SelfKnowledge> agir;
       
-      private Agir implem_agir;
+      private Agir<Actionable, SelfKnowledge> implem_agir;
       
-      private final class BridgeImpl_agir implements Agir.Requires {
+      private final class BridgeImpl_agir implements Agir.Requires<Actionable, SelfKnowledge> {
         public final CycleAlert finishedCycle() {
           return EcoRobotAgents.Robot.ComponentImpl.this.bridge.finishedCycle();
         }
+        
+        public final Actionable interagir() {
+          return EcoRobotAgents.Robot.ComponentImpl.this.bridge.envInteraction();
+        }
+        
+        public final SelfKnowledge knowledge() {
+          return EcoRobotAgents.Robot.ComponentImpl.this.knowledge().selfKnowledge();
+        }
       }
       
-      public final Agir.Component agir() {
+      public final Agir.Component<Actionable, SelfKnowledge> agir() {
         return this.agir;
       }
     }
@@ -294,7 +322,7 @@ public abstract class EcoRobotAgents {
      */
     private boolean started = false;;
     
-    private EcoRobotAgents.Robot.ComponentImpl selfComponent;
+    private EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge> selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -311,7 +339,7 @@ public abstract class EcoRobotAgents {
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected EcoRobotAgents.Robot.Provides provides() {
+    protected EcoRobotAgents.Robot.Provides<Actionable, Context, SelfKnowledge> provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -323,7 +351,7 @@ public abstract class EcoRobotAgents {
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected EcoRobotAgents.Robot.Requires requires() {
+    protected EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -335,7 +363,7 @@ public abstract class EcoRobotAgents {
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected EcoRobotAgents.Robot.Parts parts() {
+    protected EcoRobotAgents.Robot.Parts<Actionable, Context, SelfKnowledge> parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -348,52 +376,52 @@ public abstract class EcoRobotAgents {
      * This will be called once during the construction of the component to initialize this sub-component.
      * 
      */
-    protected abstract Knowledge make_knowledge();
+    protected abstract Knowledge<SelfKnowledge> make_knowledge();
     
     /**
      * This should be overridden by the implementation to define how to create this sub-component.
      * This will be called once during the construction of the component to initialize this sub-component.
      * 
      */
-    protected abstract Percevoir make_percevoir();
+    protected abstract Percevoir<Context, SelfKnowledge> make_percevoir();
     
     /**
      * This should be overridden by the implementation to define how to create this sub-component.
      * This will be called once during the construction of the component to initialize this sub-component.
      * 
      */
-    protected abstract Decider make_decider();
+    protected abstract Decider<Actionable> make_decider();
     
     /**
      * This should be overridden by the implementation to define how to create this sub-component.
      * This will be called once during the construction of the component to initialize this sub-component.
      * 
      */
-    protected abstract Agir make_agir();
+    protected abstract Agir<Actionable, SelfKnowledge> make_agir();
     
     /**
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized EcoRobotAgents.Robot.Component _newComponent(final EcoRobotAgents.Robot.Requires b, final boolean start) {
+    public synchronized EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> _newComponent(final EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> b, final boolean start) {
       if (this.init) {
       	throw new RuntimeException("This instance of Robot has already been used to create a component, use another one.");
       }
       this.init = true;
-      EcoRobotAgents.Robot.ComponentImpl  _comp = new EcoRobotAgents.Robot.ComponentImpl(this, b, true);
+      EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge>  _comp = new EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge>(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private EcoRobotAgents.ComponentImpl ecosystemComponent;
+    private EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge> ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected EcoRobotAgents.Provides eco_provides() {
+    protected EcoRobotAgents.Provides<Actionable, Context, SelfKnowledge> eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -402,7 +430,7 @@ public abstract class EcoRobotAgents {
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected EcoRobotAgents.Requires eco_requires() {
+    protected EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -411,7 +439,7 @@ public abstract class EcoRobotAgents {
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected EcoRobotAgents.Parts eco_parts() {
+    protected EcoRobotAgents.Parts<Actionable, Context, SelfKnowledge> eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -431,7 +459,7 @@ public abstract class EcoRobotAgents {
    */
   private boolean started = false;;
   
-  private EcoRobotAgents.ComponentImpl selfComponent;
+  private EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -448,7 +476,7 @@ public abstract class EcoRobotAgents {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected EcoRobotAgents.Provides provides() {
+  protected EcoRobotAgents.Provides<Actionable, Context, SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -467,7 +495,7 @@ public abstract class EcoRobotAgents {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected EcoRobotAgents.Requires requires() {
+  protected EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -479,7 +507,7 @@ public abstract class EcoRobotAgents {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected EcoRobotAgents.Parts parts() {
+  protected EcoRobotAgents.Parts<Actionable, Context, SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -491,12 +519,12 @@ public abstract class EcoRobotAgents {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized EcoRobotAgents.Component _newComponent(final EcoRobotAgents.Requires b, final boolean start) {
+  public synchronized EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> _newComponent(final EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of EcoRobotAgents has already been used to create a component, use another one.");
     }
     this.init = true;
-    EcoRobotAgents.ComponentImpl  _comp = new EcoRobotAgents.ComponentImpl(this, b, true);
+    EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge>  _comp = new EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -507,14 +535,14 @@ public abstract class EcoRobotAgents {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoRobotAgents.Robot make_Robot(final String id, final Color color);
+  protected abstract EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> make_Robot(final String id, final Color color);
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoRobotAgents.Robot _createImplementationOfRobot(final String id, final Color color) {
-    EcoRobotAgents.Robot implem = make_Robot(id,color);
+  public EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> _createImplementationOfRobot(final String id, final Color color) {
+    EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> implem = make_Robot(id,color);
     if (implem == null) {
     	throw new RuntimeException("make_Robot() in clrobots.EcoRobotAgents should not return null.");
     }

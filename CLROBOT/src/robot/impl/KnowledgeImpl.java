@@ -5,19 +5,12 @@ import java.awt.Point;
 import java.util.Map;
 
 import clrobots.Knowledge;
-import clrobots.interfaces.IGetKnowledge;
-import clrobots.interfaces.ISetKnowledge;
+import clrobots.interfaces.IRobotKnowledge;
 
-public class KnowledgeImpl extends Knowledge implements IGetKnowledge, ISetKnowledge{
-
-	@Override
-	protected IGetKnowledge make_getKnowledge() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+public class KnowledgeImpl extends AbstractKnowledge<IRobotKnowledge> implements IRobotKnowledge{
 
 	@Override
-	protected ISetKnowledge make_setKnowledge() {
+	public Point getNestCoord(Color color) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -29,9 +22,9 @@ public class KnowledgeImpl extends Knowledge implements IGetKnowledge, ISetKnowl
 	}
 
 	@Override
-	public Point getNestCoord(Color color) {
+	protected IRobotKnowledge make_selfKnowledge() {
 		// TODO Auto-generated method stub
-		return null;
+		return this;
 	}
 
 }

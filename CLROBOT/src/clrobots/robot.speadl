@@ -1,8 +1,6 @@
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
 import clrobots.interfaces.ICreateRobot
-import clrobots.interfaces.IGetKnowledge
-import clrobots.interfaces.ISetKnowledge
 import clrobots.interfaces.ITakeThreads
 import clrobots.interfaces.Igui
 import java.awt.Color
@@ -11,63 +9,63 @@ namespace clrobots {
 	
 	
 	//Composant permettant l'affichage
-	component GUI {
-		requires gui : Igui
-	}
 	
 	
-	ecosystem EcoRobotAgents {
+	ecosystem EcoRobotAgents [Actionable, Context, SelfKnowledge] {
 		
 			requires threads: ITakeThreads
 			provides createRobot: ICreateRobot
+				
 			//requires updateRobotsMap: UpdateRobotsList
 			
-			species Robot(id: String, color: Color) {
+			species Robot (id: String, color: Color) {
 				
-				//requires envInfosR: IEnvInfos 
-				//requires interaction: Iinteragir
-				
+				requires envInteraction: Actionable
+				requires envContext: Context
 				provides launchCycle : Do = percevoir.perception	
 				requires finishedCycle: CycleAlert
 				
-				part knowledge: Knowledge
+				part knowledge: Knowledge[SelfKnowledge]
 				
-				part percevoir: Percevoir{
+				part percevoir: Percevoir[Context, SelfKnowledge]{
 					bind decision to decider.decision
-					//bind envInfos to envInfosR
+					bind knowledge to knowledge.selfKnowledge
+					bind context to envContext
 				}
 				
-				part decider: Decider {
+				part decider: Decider[Actionable]{
 					bind action to agir.action
 				}
-				part agir: Agir {
+				part agir: Agir[Actionable, SelfKnowledge] {
 					bind finishedCycle to finishedCycle
-					//bind interagir to interaction
+					bind interagir to envInteraction
+					bind knowledge to knowledge.selfKnowledge
 			}
 		}
 	}
 	
-	component Knowledge {
-		provides getKnowledge: IGetKnowledge
-		provides setKnowledge: ISetKnowledge
+	component Knowledge [SelfKnowledge] {
+		provides selfKnowledge: SelfKnowledge
 		
 	}
 		
-	component Percevoir {
+	component Percevoir [Context, SelfKnowledge] {
 		provides perception : Do
-		//requires envInfos : IEnvInfos
+		requires context: Context
+		requires knowledge: SelfKnowledge
 		requires decision: Do
 	}
 	
-	component Decider {
+	component Decider [Actionable] {
 		provides decision : Do
-		requires action: Do
+		requires action: Actionable
 	}
 	
-	component Agir {
-		provides action : Do
+	component Agir [Actionable, SelfKnowledge] {
+		provides action : Actionable
+		requires interagir: Actionable
 		requires finishedCycle : CycleAlert
-		//requires interagir : Iinteragir
+		requires knowledge: SelfKnowledge 
 	}
 	
 	

@@ -1,15 +1,8 @@
 package clrobots;
 
-import clrobots.interfaces.Igui;
-
 @SuppressWarnings("all")
 public class GUI {
   public interface Requires {
-    /**
-     * This can be called by the implementation to access this required port.
-     * 
-     */
-    public Igui gui();
   }
   
   public interface Component extends GUI.Provides {
@@ -133,5 +126,13 @@ public class GUI {
     	_comp.start();
     }
     return _comp;
+  }
+  
+  /**
+   * Use to instantiate a component from this implementation.
+   * 
+   */
+  public GUI.Component newComponent() {
+    return this._newComponent(new GUI.Requires() {}, true);
   }
 }

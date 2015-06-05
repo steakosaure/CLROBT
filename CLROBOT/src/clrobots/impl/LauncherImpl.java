@@ -53,14 +53,16 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 	@Override
 	public void setAgentsMap(Map<String, Runnable> robots) {
 
+		System.out.println("------------Appel a setAgentMap-------------");
 		synchronized(this.robots){
 
 			if(execService != null)
 				execService.shutdown();
 
 			execService = Executors.newFixedThreadPool(robots.size() + 1);
-
 			if(this.robots.size() == 0 && !stop) {
+
+				
 				this.robots.clear();
 				this.robots.putAll(robots);
 				this.run();

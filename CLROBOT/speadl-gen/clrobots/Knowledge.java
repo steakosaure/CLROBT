@@ -1,37 +1,28 @@
 package clrobots;
 
-import clrobots.interfaces.IGetKnowledge;
-import clrobots.interfaces.ISetKnowledge;
-
 @SuppressWarnings("all")
-public abstract class Knowledge {
-  public interface Requires {
+public abstract class Knowledge<SelfKnowledge> {
+  public interface Requires<SelfKnowledge> {
   }
   
-  public interface Component extends Knowledge.Provides {
+  public interface Component<SelfKnowledge> extends Knowledge.Provides<SelfKnowledge> {
   }
   
-  public interface Provides {
+  public interface Provides<SelfKnowledge> {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public IGetKnowledge getKnowledge();
-    
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public ISetKnowledge setKnowledge();
+    public SelfKnowledge selfKnowledge();
   }
   
-  public interface Parts {
+  public interface Parts<SelfKnowledge> {
   }
   
-  public static class ComponentImpl implements Knowledge.Component, Knowledge.Parts {
-    private final Knowledge.Requires bridge;
+  public static class ComponentImpl<SelfKnowledge> implements Knowledge.Component<SelfKnowledge>, Knowledge.Parts<SelfKnowledge> {
+    private final Knowledge.Requires<SelfKnowledge> bridge;
     
-    private final Knowledge implementation;
+    private final Knowledge<SelfKnowledge> implementation;
     
     public void start() {
       this.implementation.start();
@@ -42,28 +33,19 @@ public abstract class Knowledge {
       
     }
     
-    private void init_getKnowledge() {
-      assert this.getKnowledge == null: "This is a bug.";
-      this.getKnowledge = this.implementation.make_getKnowledge();
-      if (this.getKnowledge == null) {
-      	throw new RuntimeException("make_getKnowledge() in clrobots.Knowledge should not return null.");
-      }
-    }
-    
-    private void init_setKnowledge() {
-      assert this.setKnowledge == null: "This is a bug.";
-      this.setKnowledge = this.implementation.make_setKnowledge();
-      if (this.setKnowledge == null) {
-      	throw new RuntimeException("make_setKnowledge() in clrobots.Knowledge should not return null.");
+    private void init_selfKnowledge() {
+      assert this.selfKnowledge == null: "This is a bug.";
+      this.selfKnowledge = this.implementation.make_selfKnowledge();
+      if (this.selfKnowledge == null) {
+      	throw new RuntimeException("make_selfKnowledge() in clrobots.Knowledge<SelfKnowledge> should not return null.");
       }
     }
     
     protected void initProvidedPorts() {
-      init_getKnowledge();
-      init_setKnowledge();
+      init_selfKnowledge();
     }
     
-    public ComponentImpl(final Knowledge implem, final Knowledge.Requires b, final boolean doInits) {
+    public ComponentImpl(final Knowledge<SelfKnowledge> implem, final Knowledge.Requires<SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -79,16 +61,10 @@ public abstract class Knowledge {
       }
     }
     
-    private IGetKnowledge getKnowledge;
+    private SelfKnowledge selfKnowledge;
     
-    public IGetKnowledge getKnowledge() {
-      return this.getKnowledge;
-    }
-    
-    private ISetKnowledge setKnowledge;
-    
-    public ISetKnowledge setKnowledge() {
-      return this.setKnowledge;
+    public SelfKnowledge selfKnowledge() {
+      return this.selfKnowledge;
     }
   }
   
@@ -106,7 +82,7 @@ public abstract class Knowledge {
    */
   private boolean started = false;;
   
-  private Knowledge.ComponentImpl selfComponent;
+  private Knowledge.ComponentImpl<SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -123,7 +99,7 @@ public abstract class Knowledge {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Knowledge.Provides provides() {
+  protected Knowledge.Provides<SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -136,20 +112,13 @@ public abstract class Knowledge {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract IGetKnowledge make_getKnowledge();
-  
-  /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract ISetKnowledge make_setKnowledge();
+  protected abstract SelfKnowledge make_selfKnowledge();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Knowledge.Requires requires() {
+  protected Knowledge.Requires<SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -161,7 +130,7 @@ public abstract class Knowledge {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Knowledge.Parts parts() {
+  protected Knowledge.Parts<SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -173,12 +142,12 @@ public abstract class Knowledge {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Knowledge.Component _newComponent(final Knowledge.Requires b, final boolean start) {
+  public synchronized Knowledge.Component<SelfKnowledge> _newComponent(final Knowledge.Requires<SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Knowledge has already been used to create a component, use another one.");
     }
     this.init = true;
-    Knowledge.ComponentImpl  _comp = new Knowledge.ComponentImpl(this, b, true);
+    Knowledge.ComponentImpl<SelfKnowledge>  _comp = new Knowledge.ComponentImpl<SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -189,7 +158,7 @@ public abstract class Knowledge {
    * Use to instantiate a component from this implementation.
    * 
    */
-  public Knowledge.Component newComponent() {
-    return this._newComponent(new Knowledge.Requires() {}, true);
+  public Knowledge.Component<SelfKnowledge> newComponent() {
+    return this._newComponent(new Knowledge.Requires<SelfKnowledge>() {}, true);
   }
 }

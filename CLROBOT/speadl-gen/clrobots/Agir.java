@@ -1,36 +1,47 @@
 package clrobots;
 
 import clrobots.interfaces.CycleAlert;
-import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Agir {
-  public interface Requires {
+public abstract class Agir<Actionable, SelfKnowledge> {
+  public interface Requires<Actionable, SelfKnowledge> {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public Actionable interagir();
+    
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
     public CycleAlert finishedCycle();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public SelfKnowledge knowledge();
   }
   
-  public interface Component extends Agir.Provides {
+  public interface Component<Actionable, SelfKnowledge> extends Agir.Provides<Actionable, SelfKnowledge> {
   }
   
-  public interface Provides {
+  public interface Provides<Actionable, SelfKnowledge> {
     /**
      * This can be called to access the provided port.
      * 
      */
-    public Do action();
+    public Actionable action();
   }
   
-  public interface Parts {
+  public interface Parts<Actionable, SelfKnowledge> {
   }
   
-  public static class ComponentImpl implements Agir.Component, Agir.Parts {
-    private final Agir.Requires bridge;
+  public static class ComponentImpl<Actionable, SelfKnowledge> implements Agir.Component<Actionable, SelfKnowledge>, Agir.Parts<Actionable, SelfKnowledge> {
+    private final Agir.Requires<Actionable, SelfKnowledge> bridge;
     
-    private final Agir implementation;
+    private final Agir<Actionable, SelfKnowledge> implementation;
     
     public void start() {
       this.implementation.start();
@@ -45,7 +56,7 @@ public abstract class Agir {
       assert this.action == null: "This is a bug.";
       this.action = this.implementation.make_action();
       if (this.action == null) {
-      	throw new RuntimeException("make_action() in clrobots.Agir should not return null.");
+      	throw new RuntimeException("make_action() in clrobots.Agir<Actionable, SelfKnowledge> should not return null.");
       }
     }
     
@@ -53,7 +64,7 @@ public abstract class Agir {
       init_action();
     }
     
-    public ComponentImpl(final Agir implem, final Agir.Requires b, final boolean doInits) {
+    public ComponentImpl(final Agir<Actionable, SelfKnowledge> implem, final Agir.Requires<Actionable, SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -69,9 +80,9 @@ public abstract class Agir {
       }
     }
     
-    private Do action;
+    private Actionable action;
     
-    public Do action() {
+    public Actionable action() {
       return this.action;
     }
   }
@@ -90,7 +101,7 @@ public abstract class Agir {
    */
   private boolean started = false;;
   
-  private Agir.ComponentImpl selfComponent;
+  private Agir.ComponentImpl<Actionable, SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -107,7 +118,7 @@ public abstract class Agir {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Agir.Provides provides() {
+  protected Agir.Provides<Actionable, SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -120,13 +131,13 @@ public abstract class Agir {
    * This will be called once during the construction of the component to initialize the port.
    * 
    */
-  protected abstract Do make_action();
+  protected abstract Actionable make_action();
   
   /**
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Agir.Requires requires() {
+  protected Agir.Requires<Actionable, SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -138,7 +149,7 @@ public abstract class Agir {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Agir.Parts parts() {
+  protected Agir.Parts<Actionable, SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -150,12 +161,12 @@ public abstract class Agir {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Agir.Component _newComponent(final Agir.Requires b, final boolean start) {
+  public synchronized Agir.Component<Actionable, SelfKnowledge> _newComponent(final Agir.Requires<Actionable, SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Agir has already been used to create a component, use another one.");
     }
     this.init = true;
-    Agir.ComponentImpl  _comp = new Agir.ComponentImpl(this, b, true);
+    Agir.ComponentImpl<Actionable, SelfKnowledge>  _comp = new Agir.ComponentImpl<Actionable, SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }

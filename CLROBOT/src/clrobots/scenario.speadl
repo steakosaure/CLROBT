@@ -6,6 +6,10 @@ import java.awt.Color
 
 namespace clrobots{
 	
+	component GUI{
+		
+	}
+	
 	ecosystem ForwardLauncher{
 		species AgentForward{
 			provides finishedCycle: CycleAlert
@@ -22,32 +26,44 @@ namespace clrobots{
 		provides threads: ITakeThreads 
 	}
 	
-	ecosystem ScenarioEco{
-		part ecoAE: EcoRobotAgents{
+	ecosystem ScenarioEco[Actionable, Context, ContextInit, SelfKnowledge]{
+		part environnement: Environnement[Actionable, Context, ContextInit]
+		
+		part ecoAE: EcoRobotAgents[Actionable, Context, SelfKnowledge]{
 			bind threads to launcher.threads
+			
 		}
-		part fw: Forward[CycleAlert]{
+		part fw: Forward[CycleAlert, Context, Actionable]{
 			bind i to launcher.finishedCycle
+			bind j to environnement.envInfos
+			bind k to environnement.interagir
 		}
 		
 		part launcher: Launcher
 		
 		
 		species DynamicAssembly(id: String, color: Color){
+			
 			use agentE: ecoAE.Robot(id, color){
 				bind finishedCycle to aFW.a
+				bind envInteraction to aFW.c
+				bind envContext to aFW.b
 			}
 			use aFW: fw.Agent
 		}
 	}
 	
-	ecosystem Forward[I]{
+	ecosystem Forward[I,J,K]{
 		 species Agent{
 		 	
 		 	provides a: I
+		 	provides b: J
+		 	provides c: K
 		 }
 		 
 		 requires i: I
+		 requires j: J
+		 requires k: K
 	} 
 	
 

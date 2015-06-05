@@ -3,8 +3,20 @@ package clrobots;
 import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Percevoir {
-  public interface Requires {
+public abstract class Percevoir<Context, SelfKnowledge> {
+  public interface Requires<Context, SelfKnowledge> {
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public Context context();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public SelfKnowledge knowledge();
+    
     /**
      * This can be called by the implementation to access this required port.
      * 
@@ -12,10 +24,10 @@ public abstract class Percevoir {
     public Do decision();
   }
   
-  public interface Component extends Percevoir.Provides {
+  public interface Component<Context, SelfKnowledge> extends Percevoir.Provides<Context, SelfKnowledge> {
   }
   
-  public interface Provides {
+  public interface Provides<Context, SelfKnowledge> {
     /**
      * This can be called to access the provided port.
      * 
@@ -23,13 +35,13 @@ public abstract class Percevoir {
     public Do perception();
   }
   
-  public interface Parts {
+  public interface Parts<Context, SelfKnowledge> {
   }
   
-  public static class ComponentImpl implements Percevoir.Component, Percevoir.Parts {
-    private final Percevoir.Requires bridge;
+  public static class ComponentImpl<Context, SelfKnowledge> implements Percevoir.Component<Context, SelfKnowledge>, Percevoir.Parts<Context, SelfKnowledge> {
+    private final Percevoir.Requires<Context, SelfKnowledge> bridge;
     
-    private final Percevoir implementation;
+    private final Percevoir<Context, SelfKnowledge> implementation;
     
     public void start() {
       this.implementation.start();
@@ -44,7 +56,7 @@ public abstract class Percevoir {
       assert this.perception == null: "This is a bug.";
       this.perception = this.implementation.make_perception();
       if (this.perception == null) {
-      	throw new RuntimeException("make_perception() in clrobots.Percevoir should not return null.");
+      	throw new RuntimeException("make_perception() in clrobots.Percevoir<Context, SelfKnowledge> should not return null.");
       }
     }
     
@@ -52,7 +64,7 @@ public abstract class Percevoir {
       init_perception();
     }
     
-    public ComponentImpl(final Percevoir implem, final Percevoir.Requires b, final boolean doInits) {
+    public ComponentImpl(final Percevoir<Context, SelfKnowledge> implem, final Percevoir.Requires<Context, SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -89,7 +101,7 @@ public abstract class Percevoir {
    */
   private boolean started = false;;
   
-  private Percevoir.ComponentImpl selfComponent;
+  private Percevoir.ComponentImpl<Context, SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -106,7 +118,7 @@ public abstract class Percevoir {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Percevoir.Provides provides() {
+  protected Percevoir.Provides<Context, SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -125,7 +137,7 @@ public abstract class Percevoir {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Percevoir.Requires requires() {
+  protected Percevoir.Requires<Context, SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -137,7 +149,7 @@ public abstract class Percevoir {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Percevoir.Parts parts() {
+  protected Percevoir.Parts<Context, SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -149,12 +161,12 @@ public abstract class Percevoir {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Percevoir.Component _newComponent(final Percevoir.Requires b, final boolean start) {
+  public synchronized Percevoir.Component<Context, SelfKnowledge> _newComponent(final Percevoir.Requires<Context, SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Percevoir has already been used to create a component, use another one.");
     }
     this.init = true;
-    Percevoir.ComponentImpl  _comp = new Percevoir.ComponentImpl(this, b, true);
+    Percevoir.ComponentImpl<Context, SelfKnowledge>  _comp = new Percevoir.ComponentImpl<Context, SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }

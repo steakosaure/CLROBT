@@ -5,11 +5,11 @@ import clrobots.interfaces.Iinteragir
 
 namespace clrobots{
 	//Composant contenant l'environnement 
-	component Environnement {
-		requires updateUi: IUpdateUi
-		provides interagir : Iinteragir
-		provides envInfos: IEnvInfos
-		provides envInit: IEnvInit
+	component Environnement [Actionable, Context, ContextInit]{
+		//requires updateUi: IUpdateUi
+		provides interagir : Actionable
+		provides envInfos: Context
+		provides envInit: ContextInit
 	}
 	
 }
