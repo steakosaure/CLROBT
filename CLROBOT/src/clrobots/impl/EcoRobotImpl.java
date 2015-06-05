@@ -129,10 +129,55 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				this.id = id;
 			}
 			
+			public Cellule getNearestCellule(Point destination, List<Cellule> cells){
+				Cellule depart = null;
+				if (!cells.isEmpty()){
+					for  (Cellule cell : cells) {
+						if (depart == null){
+							depart = cell;
+						} else {
+							double dist1 = depart.getCoordinates().distance(destination);
+							double dist2 = cell.getCoordinates().distance(destination);
+							if (dist2 - dist1 > 0.){
+								depart = cell;
+							}
+						}
+					}
+					return depart;
+				} else {
+					return null;
+				}	
+			}
+			
+			public Cellule chooseBox(List<Cellule> cellList){
+				Cellule choosenBox = null;
+				for(Cellule cell : cellList){
+					if (choosenBox == null){
+						choosenBox = cell;
+					}
+					if (choosenBox.getBox().getCouleur() == color){
+						return choosenBox;
+					} else {
+						choosenBox = cell;
+					}
+				}
+				
+				return choosenBox;
+			}
+			
+			public List<Cellule> getFreeCellulesFrom(List<Cellule> cellList){
+				List<Cellule> freeCells = new ArrayList<Cellule>();
+				for (Cellule cell : cellList){
+					if (cell.getStatus() == CellStatus.FREE){
+						freeCells.add(cell);
+					}
+				}
+				return freeCells;
+			}
+			
 			@Override
 			public void makeDecision() {
 				System.out.println(id+" : Decision");
-				boolean box = false;
 				List<Cellule> containingBoxCells = new ArrayList<Cellule>();
 				
 				for (Cellule cell : adjacentCells){
@@ -143,22 +188,23 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				
 				if (boite == null && containingBoxCells.isEmpty() && coord.getStatus() != CellStatus.BOX){
 					/*Si j'ai pas de boite et rien en vue alors se déplace aléatoirement */
-					int cellIndex = new Random().nextInt(adjacentCells.size());
+					int cellIndex = new Random().nextInt(getFreeCellulesFrom(adjacentCells).size());
 					this.requires().action().mooveRobotWithoutBox(id, color, coord.getCoordinates(), adjacentCells.get(cellIndex).getCoordinates());
-				} else if(boite == null){
-					/*Si pas de boite et boites en vue alors se déplace en direction de la boite de la meme couleur en priorité */
-					
-				} else if(boite != null){
+				} else if(boite == null && !containingBoxCells.isEmpty()){
+					/*Si pas de boite et boites en vue alors prend la boite de la meme couleur en priorité */
+					Cellule choosenBox = chooseBox(containingBoxCells);
+					this.requires().action().takeBox(id, color, coord.getCoordinates(), choosenBox.getCoordinates());	
+				} else if(boite != null && containingBoxCells.isEmpty()){
 					/*Si une boite et rien en vue alors se déplace vers le nid */
-					
-				} else if(true){
-					
-				}
-				
-				/*Si une boite pas de la meme couleur et une boite en vue de la meme couleur alors deposer la boite*/
-				
-				//this.requires().action().mooveRobotWithoutBox("", color, new Point(1,1), new Point(1,2));
-				
+					Point nestCoordinates = this.requires().knowledge().getNestCoord(boite.getCouleur());
+					Point depart = getNearestCellule(nestCoordinates, getFreeCellulesFrom(adjacentCells)).getCoordinates();
+					if (depart != null){
+						this.requires().action().mooveRobotWithBox(id, color, boite, coord.getCoordinates(), depart);
+					}
+				} else if(boite != null && this.requires().knowledge().getNestCoord(boite.getCouleur()) == coord.getCoordinates()){
+					/*Si une boite pas de la meme couleur et une boite en vue de la meme couleur alors deposer la boite*/
+					this.requires().action().putDownBox(coord.getCoordinates());
+				}			
 			}
 			
 
