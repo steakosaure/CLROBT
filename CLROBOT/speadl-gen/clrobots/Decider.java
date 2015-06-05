@@ -3,19 +3,25 @@ package clrobots;
 import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Decider<Actionable> {
-  public interface Requires<Actionable> {
+public abstract class Decider<Actionable, SelfKnowledge> {
+  public interface Requires<Actionable, SelfKnowledge> {
     /**
      * This can be called by the implementation to access this required port.
      * 
      */
     public Actionable action();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public SelfKnowledge knowledge();
   }
   
-  public interface Component<Actionable> extends Decider.Provides<Actionable> {
+  public interface Component<Actionable, SelfKnowledge> extends Decider.Provides<Actionable, SelfKnowledge> {
   }
   
-  public interface Provides<Actionable> {
+  public interface Provides<Actionable, SelfKnowledge> {
     /**
      * This can be called to access the provided port.
      * 
@@ -23,13 +29,13 @@ public abstract class Decider<Actionable> {
     public Do decision();
   }
   
-  public interface Parts<Actionable> {
+  public interface Parts<Actionable, SelfKnowledge> {
   }
   
-  public static class ComponentImpl<Actionable> implements Decider.Component<Actionable>, Decider.Parts<Actionable> {
-    private final Decider.Requires<Actionable> bridge;
+  public static class ComponentImpl<Actionable, SelfKnowledge> implements Decider.Component<Actionable, SelfKnowledge>, Decider.Parts<Actionable, SelfKnowledge> {
+    private final Decider.Requires<Actionable, SelfKnowledge> bridge;
     
-    private final Decider<Actionable> implementation;
+    private final Decider<Actionable, SelfKnowledge> implementation;
     
     public void start() {
       this.implementation.start();
@@ -44,7 +50,7 @@ public abstract class Decider<Actionable> {
       assert this.decision == null: "This is a bug.";
       this.decision = this.implementation.make_decision();
       if (this.decision == null) {
-      	throw new RuntimeException("make_decision() in clrobots.Decider<Actionable> should not return null.");
+      	throw new RuntimeException("make_decision() in clrobots.Decider<Actionable, SelfKnowledge> should not return null.");
       }
     }
     
@@ -52,7 +58,7 @@ public abstract class Decider<Actionable> {
       init_decision();
     }
     
-    public ComponentImpl(final Decider<Actionable> implem, final Decider.Requires<Actionable> b, final boolean doInits) {
+    public ComponentImpl(final Decider<Actionable, SelfKnowledge> implem, final Decider.Requires<Actionable, SelfKnowledge> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -89,7 +95,7 @@ public abstract class Decider<Actionable> {
    */
   private boolean started = false;;
   
-  private Decider.ComponentImpl<Actionable> selfComponent;
+  private Decider.ComponentImpl<Actionable, SelfKnowledge> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -106,7 +112,7 @@ public abstract class Decider<Actionable> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Decider.Provides<Actionable> provides() {
+  protected Decider.Provides<Actionable, SelfKnowledge> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -125,7 +131,7 @@ public abstract class Decider<Actionable> {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Decider.Requires<Actionable> requires() {
+  protected Decider.Requires<Actionable, SelfKnowledge> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -137,7 +143,7 @@ public abstract class Decider<Actionable> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Decider.Parts<Actionable> parts() {
+  protected Decider.Parts<Actionable, SelfKnowledge> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -149,12 +155,12 @@ public abstract class Decider<Actionable> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Decider.Component<Actionable> _newComponent(final Decider.Requires<Actionable> b, final boolean start) {
+  public synchronized Decider.Component<Actionable, SelfKnowledge> _newComponent(final Decider.Requires<Actionable, SelfKnowledge> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Decider has already been used to create a component, use another one.");
     }
     this.init = true;
-    Decider.ComponentImpl<Actionable>  _comp = new Decider.ComponentImpl<Actionable>(this, b, true);
+    Decider.ComponentImpl<Actionable, SelfKnowledge>  _comp = new Decider.ComponentImpl<Actionable, SelfKnowledge>(this, b, true);
     if (start) {
     	_comp.start();
     }

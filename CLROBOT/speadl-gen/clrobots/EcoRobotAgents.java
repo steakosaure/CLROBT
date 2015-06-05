@@ -135,7 +135,7 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Decider.Component<Actionable> decider();
+      public Decider.Component<Actionable, SelfKnowledge> decider();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
@@ -156,7 +156,7 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
         assert this.percevoir != null: "This is a bug.";
         ((Percevoir.ComponentImpl<Context, SelfKnowledge>) this.percevoir).start();
         assert this.decider != null: "This is a bug.";
-        ((Decider.ComponentImpl<Actionable>) this.decider).start();
+        ((Decider.ComponentImpl<Actionable, SelfKnowledge>) this.decider).start();
         assert this.agir != null: "This is a bug.";
         ((Agir.ComponentImpl<Actionable, SelfKnowledge>) this.agir).start();
         this.implementation.start();
@@ -271,17 +271,21 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
         return this.percevoir;
       }
       
-      private Decider.Component<Actionable> decider;
+      private Decider.Component<Actionable, SelfKnowledge> decider;
       
-      private Decider<Actionable> implem_decider;
+      private Decider<Actionable, SelfKnowledge> implem_decider;
       
-      private final class BridgeImpl_decider implements Decider.Requires<Actionable> {
+      private final class BridgeImpl_decider implements Decider.Requires<Actionable, SelfKnowledge> {
         public final Actionable action() {
           return EcoRobotAgents.Robot.ComponentImpl.this.agir().action();
         }
+        
+        public final SelfKnowledge knowledge() {
+          return EcoRobotAgents.Robot.ComponentImpl.this.knowledge().selfKnowledge();
+        }
       }
       
-      public final Decider.Component<Actionable> decider() {
+      public final Decider.Component<Actionable, SelfKnowledge> decider() {
         return this.decider;
       }
       
@@ -390,7 +394,7 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
      * This will be called once during the construction of the component to initialize this sub-component.
      * 
      */
-    protected abstract Decider<Actionable> make_decider();
+    protected abstract Decider<Actionable, SelfKnowledge> make_decider();
     
     /**
      * This should be overridden by the implementation to define how to create this sub-component.

@@ -33,8 +33,9 @@ namespace clrobots {
 					bind context to envContext
 				}
 				
-				part decider: Decider[Actionable]{
+				part decider: Decider[Actionable, SelfKnowledge]{
 					bind action to agir.action
+					bind knowledge to knowledge.selfKnowledge
 				}
 				part agir: Agir[Actionable, SelfKnowledge] {
 					bind finishedCycle to finishedCycle
@@ -56,9 +57,10 @@ namespace clrobots {
 		requires decision: Do
 	}
 	
-	component Decider [Actionable] {
+	component Decider [Actionable, SelfKnowledge] {
 		provides decision : Do
 		requires action: Actionable
+		requires knowledge: SelfKnowledge
 	}
 	
 	component Agir [Actionable, SelfKnowledge] {

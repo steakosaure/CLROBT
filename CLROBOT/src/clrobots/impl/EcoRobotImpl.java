@@ -93,7 +93,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 		}
 
 		@Override
-		protected Decider<Iinteragir> make_decider() {
+		protected Decider<Iinteragir, IRobotKnowledge> make_decider() {
 			// TODO Auto-generated method stub
 			return new DeciderImpl(id);
 		}
@@ -121,7 +121,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 		}
 
 		
-		private class DeciderImpl extends AbstractDecider<Iinteragir> {
+		private class DeciderImpl extends AbstractDecider<Iinteragir, IRobotKnowledge> {
 
 			private String id;
 			

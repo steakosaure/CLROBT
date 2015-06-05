@@ -3,7 +3,7 @@ package robot.impl;
 import clrobots.Decider;
 import clrobots.interfaces.Do;
 
-public abstract class AbstractDecider<Actionable> extends Decider<Actionable> implements Do{
+public abstract class AbstractDecider<Actionable, SelfKnowledge> extends Decider<Actionable, SelfKnowledge> implements Do{
 
 	public abstract void makeDecision();
 	
