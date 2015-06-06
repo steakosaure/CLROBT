@@ -320,7 +320,12 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				
 				int treat = 0;
 				
-				if(color == robotColor)
+				if(color == robotColor) {
+					treat = (int) MAXNJ *2 / 3;
+				} else {
+					treat = (int) MAXNJ / 3;
+				}
+				energyLevel += MAXNJ;
 				this.requires().finishedCycle().endOfCycleAlert(id);
 			}
 			
@@ -331,8 +336,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			@Override
 			public void suicide(Point cell) {
 				synchronized (robotsMap) {
-					Runnable robot =null;
-					robot = robotsMap.get(id);
+					Runnable robot = robotsMap.get(id);
 					
 					ConcurrentHashMap<String, Runnable> nouvelleMap = new ConcurrentHashMap<String, Runnable>();
 					for(String idRobot: robotsMap.keySet()) {
