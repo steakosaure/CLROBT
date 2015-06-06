@@ -66,8 +66,9 @@ public class Main {
 		
 		//new ScenarioEcoImpl().newComponent();
 		DrawService gui = new DrawService(50, 50);
-		gui.drawAt(0, 0, Color.BLACK);
-		gui.drawAt(49, 49, Color.BLACK);
+		gui.drawBoxesAt(0, 0, Color.WHITE);
+		gui.drawNestAt(10, 10, Color.RED);
+		gui.drawRobotWithBoxAt(15, 20, Color.GREEN, Color.RED);
 	}
 
 }
