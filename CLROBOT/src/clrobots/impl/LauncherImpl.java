@@ -19,7 +19,7 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 	private int nbFinishedCycles = 0;
 	private ExecutorService execService = null;
 	boolean stop = false;
-	private int speed = 1000;
+	private int speed =100;
 
 	@Override
 	public void run() {

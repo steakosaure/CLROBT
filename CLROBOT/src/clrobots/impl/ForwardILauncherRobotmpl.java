@@ -43,8 +43,8 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 		}
 
 		@Override
-		public void putDownBox(Point point) {
-			eco_requires().k().putDownBox(point);
+		public void putDownBox(Point point, Color color) {
+			eco_requires().k().putDownBox(point, color);
 			
 		}
 
@@ -68,6 +68,12 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 		protected Iinteragir make_c() {
 			// TODO Auto-generated method stub
 			return this;
+		}
+
+		@Override
+		public void doNothing() {
+			// TODO Auto-generated method stub
+			
 		}
 		
 	}

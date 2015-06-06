@@ -190,10 +190,11 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 	}
 
 	@Override
-	public void putDownBox(Point point) {
+	public void putDownBox(Point point, Color c) {
 		synchronized (cellList) {
-			cellList.get(point).addBoxtoNest();
-	}	
+			cellList.get(nestsCoords.get(c)).addBoxtoNest();
+			this.requires().updateOutput().updateCell(cellList.get(point));
+		}	
 	}
 
 	@Override
@@ -231,6 +232,12 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 		}
 		
 		return adjacentCells;
+	}
+
+	@Override
+	public void doNothing() {
+		// TODO Auto-generated method stub
+		
 	}
 
 

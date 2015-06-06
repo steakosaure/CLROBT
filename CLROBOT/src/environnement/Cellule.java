@@ -76,7 +76,6 @@ public class Cellule {
 	public void addBoxtoNest(){
 		if (nest != null){
 			nest.addBox();
-			this.box = null;
 		}
 	}
 
