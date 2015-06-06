@@ -6,9 +6,11 @@ import clrobots.Knowledge;
 import clrobots.Percevoir;
 import clrobots.interfaces.CycleAlert;
 import clrobots.interfaces.Do;
-import clrobots.interfaces.ICreateRobot;
 import clrobots.interfaces.ITakeThreads;
+import environnement.Cellule;
 import java.awt.Color;
+import java.awt.Point;
+import java.util.Map;
 
 @SuppressWarnings("all")
 public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
@@ -24,11 +26,6 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
   }
   
   public interface Provides<Actionable, Context, SelfKnowledge> {
-    /**
-     * This can be called to access the provided port.
-     * 
-     */
-    public ICreateRobot createRobot();
   }
   
   public interface Parts<Actionable, Context, SelfKnowledge> {
@@ -48,16 +45,8 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
       
     }
     
-    private void init_createRobot() {
-      assert this.createRobot == null: "This is a bug.";
-      this.createRobot = this.implementation.make_createRobot();
-      if (this.createRobot == null) {
-      	throw new RuntimeException("make_createRobot() in clrobots.EcoRobotAgents<Actionable, Context, SelfKnowledge> should not return null.");
-      }
-    }
-    
     protected void initProvidedPorts() {
-      init_createRobot();
+      
     }
     
     public ComponentImpl(final EcoRobotAgents<Actionable, Context, SelfKnowledge> implem, final EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> b, final boolean doInits) {
@@ -74,12 +63,6 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
       	initParts();
       	initProvidedPorts();
       }
-    }
-    
-    private ICreateRobot createRobot;
-    
-    public ICreateRobot createRobot() {
-      return this.createRobot;
     }
   }
   
@@ -489,13 +472,6 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
   }
   
   /**
-   * This should be overridden by the implementation to define the provided port.
-   * This will be called once during the construction of the component to initialize the port.
-   * 
-   */
-  protected abstract ICreateRobot make_createRobot();
-  
-  /**
    * This can be called by the implementation to access the required ports.
    * 
    */
@@ -539,14 +515,14 @@ public abstract class EcoRobotAgents<Actionable, Context, SelfKnowledge> {
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected abstract EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> make_Robot(final String id, final Color color);
+  protected abstract EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> make_Robot(final String id, final Color color, final Cellule position, final Map<Color, Point> nests);
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> _createImplementationOfRobot(final String id, final Color color) {
-    EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> implem = make_Robot(id,color);
+  public EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> _createImplementationOfRobot(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
+    EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> implem = make_Robot(id,color,position,nests);
     if (implem == null) {
     	throw new RuntimeException("make_Robot() in clrobots.EcoRobotAgents should not return null.");
     }

@@ -2,8 +2,10 @@ import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
 import clrobots.interfaces.ICreateRobot
 import clrobots.interfaces.ITakeThreads
-import clrobots.interfaces.Igui
+import environnement.Cellule
 import java.awt.Color
+import java.awt.Point
+import java.util.Map
 
 namespace clrobots {
 	
@@ -14,11 +16,10 @@ namespace clrobots {
 	ecosystem EcoRobotAgents [Actionable, Context, SelfKnowledge] {
 		
 			requires threads: ITakeThreads
-			provides createRobot: ICreateRobot
 				
 			//requires updateRobotsMap: UpdateRobotsList
 			
-			species Robot (id: String, color: Color) {
+			species Robot (id: String, color: Color, position: Cellule, nests: Map[Color,Point]) {
 				
 				requires envInteraction: Actionable
 				requires envContext: Context

@@ -17,8 +17,8 @@ public class Cellule {
 		status = CellStatus.FREE;
 		box = null;
 		nest = null;
-		robotColor = null;
-		robotId = null;
+		setRobotColor(null);
+		setRobotId(null);
 	}
 	
 	public Point getCoordinates(){
@@ -26,17 +26,17 @@ public class Cellule {
 	}
 	
 	public void robotCaryingBox(String robotId, Color robotColor, Boite box) {
-		this.robotId = robotId;
-		this.robotColor = robotColor;
-		this.box = null;
+		this.setRobotId(robotId);
+		this.setRobotColor(robotColor);
+		this.box = box;
 		if (this.status != CellStatus.NEST){
 			this.status = CellStatus.ROBOTWITHBOX;
 		}
 	}
 	
 	public void robotNotCaryingBox(String robotId, Color robotColor) {
-		this.robotId = robotId;
-		this.robotColor = robotColor;
+		this.setRobotId(robotId);
+		this.setRobotColor(robotColor);
 		if (this.status != CellStatus.NEST){
 			this.status = CellStatus.ROBOT;
 		}
@@ -44,8 +44,8 @@ public class Cellule {
 	
 	public void setEmpty(){
 		box = null;
-		robotColor = null;
-		robotId = null;
+		setRobotColor(null);
+		setRobotId(null);
 		if (this.status != CellStatus.NEST){
 			this.status = CellStatus.FREE;
 		}
@@ -65,6 +65,10 @@ public class Cellule {
 		this.status = CellStatus.NEST;
 	}
 	
+	public Nest getNest() {
+		return nest;
+	}
+	
 	public CellStatus getStatus(){
 		return this.status;
 	}
@@ -74,6 +78,22 @@ public class Cellule {
 			nest.addBox();
 			this.box = null;
 		}
+	}
+
+	public Color getRobotColor() {
+		return robotColor;
+	}
+	
+	private void setRobotColor(Color robotColor) {
+		this.robotColor = robotColor;
+	}
+
+	public String getRobotId() {
+		return robotId;
+	}
+
+	private void setRobotId(String robotId) {
+		this.robotId = robotId;
 	}
 
 }

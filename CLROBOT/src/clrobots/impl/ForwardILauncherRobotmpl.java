@@ -25,20 +25,20 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 		}
 
 		@Override
-		public void mooveRobotWithoutBox(String idRobot, Color color,
+		public boolean mooveRobotWithoutBox(String idRobot, Color color,
 				Point oldPoint, Point newPoint) {
-			eco_requires().k().mooveRobotWithoutBox(idRobot, color, oldPoint, newPoint);
+			return eco_requires().k().mooveRobotWithoutBox(idRobot, color, oldPoint, newPoint);
 		}
 
 		@Override
-		public void mooveRobotWithBox(String idRobot, Color color, Boite boite,
+		public boolean mooveRobotWithBox(String idRobot, Color color, Boite boite,
 				Point oldPoint, Point newPoint) {
-			eco_requires().k().mooveRobotWithBox(idRobot, color, boite, oldPoint, newPoint);	
+			return eco_requires().k().mooveRobotWithBox(idRobot, color, boite, oldPoint, newPoint);	
 		}
 
 		@Override
-		public void takeBox(String idRobot, Color robotColor, Point oldPoint, Point newPoint) {
-			eco_requires().k().takeBox(idRobot, robotColor, oldPoint, newPoint);
+		public boolean takeBox(String idRobot, Color robotColor, Point oldPoint, Point newPoint) {
+			return eco_requires().k().takeBox(idRobot, robotColor, oldPoint, newPoint);
 			
 		}
 

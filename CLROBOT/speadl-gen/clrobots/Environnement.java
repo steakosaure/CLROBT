@@ -1,5 +1,7 @@
 package clrobots;
 
+import clrobots.interfaces.ICreateRobot;
+
 @SuppressWarnings("all")
 public abstract class Environnement<Actionable, Context, ContextInit, UpdateOutput> {
   public interface Requires<Actionable, Context, ContextInit, UpdateOutput> {
@@ -8,6 +10,12 @@ public abstract class Environnement<Actionable, Context, ContextInit, UpdateOutp
      * 
      */
     public UpdateOutput updateOutput();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public ICreateRobot createRobot();
   }
   
   public interface Component<Actionable, Context, ContextInit, UpdateOutput> extends Environnement.Provides<Actionable, Context, ContextInit, UpdateOutput> {

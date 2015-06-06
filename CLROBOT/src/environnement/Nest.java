@@ -19,4 +19,8 @@ public class Nest {
 	public void addBox() {
 		this.nbBoxes ++;
 	}
+	
+	public Color getNestColor() {
+		return nestColor;
+	}
 }

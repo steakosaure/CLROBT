@@ -52,8 +52,6 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 
 	@Override
 	public void setAgentsMap(Map<String, Runnable> robots) {
-
-		System.out.println("------------Appel a setAgentMap-------------");
 		synchronized(this.robots){
 
 			if(execService != null)
@@ -76,10 +74,10 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 
 	@Override
 	public void endOfCycleAlert(String id) {
-		System.out.println(new Date() + " : Agent Etat "+id+" a fini son cycle!");
+		//System.out.println(new Date() + " : Agent Etat "+id+" a fini son cycle!");
 		nbFinishedCycles++;
 
-		System.out.println("nbFinished = "+nbFinishedCycles+ " :  size = "+robots.size() + " : nbAgentPC = "+ nbRobotsPerCycle);
+		//System.out.println("nbFinished = "+nbFinishedCycles+ " :  size = "+robots.size() + " : nbAgentPC = "+ nbRobotsPerCycle);
 		if(nbFinishedCycles == 	nbRobotsPerCycle && !stop){
 			System.out.println("Run cycles!");
 			nbFinishedCycles = 0;

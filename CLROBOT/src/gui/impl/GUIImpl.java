@@ -1,5 +1,6 @@
 package gui.impl;
 
+import environnement.CellStatus;
 import environnement.Cellule;
 import environnement.interfaces.IEnvInit;
 import gui.CelluleGUI;
@@ -10,6 +11,7 @@ import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Map;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -20,9 +22,22 @@ import javax.swing.SwingUtilities;
 
 import clrobots.GUI;
 
+public class GUIImpl extends GUI<IUpdateUi, IEnvInit> implements IUpdateUi, Runnable {
 
-public class GUIImpl extends GUI<IUpdateUi, IEnvInit> implements IUpdateUi {
-
+	private Map<Color, Integer> nbBoxes;
+	private Map<Color, Integer> nbRobots;
+	DrawService panel; 
+	//pri
+	
+	
+	@Override
+		protected void start() {
+			super.start();
+		    panel = new DrawService(50, 50); 
+		    
+		    
+		}
+	
 /*
 	private JFrame myFrameInfo = new JFrame("");
 	final JPanel addNidPanel = new JPanel();
@@ -159,8 +174,29 @@ public class GUIImpl extends GUI<IUpdateUi, IEnvInit> implements IUpdateUi {
 
 	@Override
 	public void updateCell(Cellule cell) {
-		// TODO Auto-generated method stub
+		int x = cell.getCoordinates().x;
+		int y = cell.getCoordinates().y;
 		
+		switch(cell.getStatus()) {
+		case BOX:
+				panel.drawBoxesAt(x, y, cell.getBox().getCouleur());
+				  break;
+				  
+		case ROBOT: 
+					panel.drawRobotAt(x, y, cell.getRobotColor());
+					break;
+		case ROBOTWITHBOX: panel.drawRobotWithBoxAt(x, y, cell.getRobotColor(), cell.getBox().getCouleur());
+					break;
+		case NEST: panel.drawNestAt(x, y, cell.getNest().getNestColor());
+				    break; 
+		default: panel.clear(x, y);
+			break; 
+		}
+	}
+
+	@Override
+	public void run() {
+		this.requires().initEnvironnement().randomInit(200, 3);
 	}
 
 

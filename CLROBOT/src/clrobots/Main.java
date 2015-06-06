@@ -2,6 +2,7 @@ package clrobots;
 
 import java.awt.Color;
 
+import clrobots.impl.ScenarioEcoImpl;
 import gui.impl.DrawService;
 
 public class Main {
@@ -64,11 +65,7 @@ public class Main {
 			System.out.println("("+boite.getPositionX()+","+boite.getPositionY()+") :" + boite.getCouleur());
 		}*/
 		
-		//new ScenarioEcoImpl().newComponent();
-		DrawService gui = new DrawService(50, 50);
-		gui.drawBoxesAt(0, 0, Color.WHITE);
-		gui.drawNestAt(10, 10, Color.RED);
-		gui.drawRobotWithBoxAt(15, 20, Color.GREEN, Color.RED);
+		new ScenarioEcoImpl().newComponent();
 	}
 
 }

@@ -64,15 +64,15 @@ public class DrawService extends JPanel {
 	// Callable only in paintComponent(), or if you know what your doing
 	private void drawAt(int x, int y, Color c, Graphics g) {
 		g.setColor(c);
-		Rectangle r = new Rectangle(x * widthRatio, y * heightRatio,
-				widthRatio, heightRatio);
+		Rectangle r = new Rectangle(x * widthRatio + 2, y * heightRatio + 2,
+				widthRatio - 4, heightRatio - 4);
 		printShape(r, g);
 		
 	}
 	
 	public void drawBoxesAt(int x, int y, Color c) {
-
 		currentBoxes.put(new Point(x, y), c);
+		this.repaint();
 	}
 	
 	public void drawNestAt(int x, int y, Color c) {
@@ -109,11 +109,12 @@ public class DrawService extends JPanel {
 	// Use this method to store a point to draw.
 	public void drawAt(int x, int y, Color c) {
 		currentRobots.put(new Point(x, y), c);
-
+		this.repaint();
 	}
 	
 	public void drawRobotAt(int x, int y, Color c) {
 		currentRobots.put(new Point(x, y), c);
+		this.repaint();
 	}
 	
 	public void drawRobotWithBoxAt(int x, int y, Color cRobot, Color cBoite) {
@@ -121,6 +122,7 @@ public class DrawService extends JPanel {
 		colors[0] = cRobot;
 		colors[1] = cBoite;
 		currentRobotsWithBox.put(new Point(x, y), colors);
+		this.repaint();
 	}
 	
 	public void drawRobotWithBoxAt(int x, int y, Color cRobot, Color cBoite, Graphics g) {
@@ -128,6 +130,13 @@ public class DrawService extends JPanel {
 		drawBoxesAt(x, y, cBoite, g);
 	}
 
+	public void clear(int x, int y) {
+		currentRobots.remove(new Point(x,y));
+		currentBoxes.remove(new Point(x,y));
+		currentRobotsWithBox.remove(new Point(x,y));
+		this.repaint();
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);

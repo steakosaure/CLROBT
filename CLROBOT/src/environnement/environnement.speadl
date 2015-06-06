@@ -1,14 +1,17 @@
 import environnement.interfaces.IEnvInfos
 import environnement.interfaces.IEnvInit
 import clrobots.interfaces.Iinteragir
+import clrobots.interfaces.ICreateRobot
 
 namespace clrobots{
 	//Composant contenant l'environnement 
 	component Environnement [Actionable, Context, ContextInit, UpdateOutput]{
 		requires updateOutput: UpdateOutput
+		requires createRobot: ICreateRobot
 		provides interagir : Actionable
 		provides envInfos: Context
 		provides envInit: ContextInit
+		
 	}
 	
 }

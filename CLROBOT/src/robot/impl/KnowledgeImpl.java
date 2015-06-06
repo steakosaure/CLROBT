@@ -2,28 +2,27 @@ package robot.impl;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.Map;
 
 import clrobots.Knowledge;
 import clrobots.interfaces.IRobotKnowledge;
 
 public class KnowledgeImpl extends AbstractKnowledge<IRobotKnowledge> implements IRobotKnowledge{
-
+	private Map<Color, Point> nestCoord = new HashMap<Color, Point>();
+	
 	@Override
 	public Point getNestCoord(Color color) {
-		// TODO Auto-generated method stub
-		return null;
+		return nestCoord.get(color);
 	}
 
 	@Override
-	public void setNestsPotisions(Map<Point, Color> nestCoord) {
-		// TODO Auto-generated method stub
-		
+	public void setNestsPotisions(Map<Color, Point> nestCoord) {
+		this.nestCoord = nestCoord;
 	}
 
 	@Override
 	protected IRobotKnowledge make_selfKnowledge() {
-		// TODO Auto-generated method stub
 		return this;
 	}
 
