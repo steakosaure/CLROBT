@@ -75,6 +75,11 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 			// TODO Auto-generated method stub
 			
 		}
+
+		@Override
+		public void suicide(Point cell) {
+			eco_requires().k().suicide(cell);
+		}
 		
 	}
 

@@ -19,14 +19,13 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 	private int nbFinishedCycles = 0;
 	private ExecutorService execService = null;
 	boolean stop = false;
-	private int speed =100;
+	private int speed = 500;
 
 	@Override
 	public void run() {
 
 		synchronized(robots){
 			nbRobotsPerCycle = robots.size();
-			System.out.println();
 			System.out.println("RUN!!!!!  "+ robots.size());
 
 
@@ -39,8 +38,6 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 
 			}
 		}
-
-		//	this.requires().lancer().doIt();
 	}
 
 	@Override
@@ -67,6 +64,8 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 			} else {
 				this.robots.clear();
 				this.robots.putAll(robots);
+				System.out.println("ICI "+ this.robots.size());
+				
 			}
 		}
 
@@ -74,12 +73,11 @@ public class LauncherImpl extends Launcher implements Callable, CycleAlert, ITak
 
 	@Override
 	public void endOfCycleAlert(String id) {
-		//System.out.println(new Date() + " : Agent Etat "+id+" a fini son cycle!");
+		System.out.println(new Date() + " : Agent Etat "+id+" a fini son cycle!");
 		nbFinishedCycles++;
 
-		//System.out.println("nbFinished = "+nbFinishedCycles+ " :  size = "+robots.size() + " : nbAgentPC = "+ nbRobotsPerCycle);
+		System.out.println("nbFinished = "+nbFinishedCycles+ " :  size = "+robots.size() + " : nbAgentPC = "+ nbRobotsPerCycle);
 		if(nbFinishedCycles == 	nbRobotsPerCycle && !stop){
-			System.out.println("Run cycles!");
 			nbFinishedCycles = 0;
 			try {
 				Thread.sleep(speed);

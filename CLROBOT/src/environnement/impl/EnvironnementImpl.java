@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 import clrobots.Environnement;
 import clrobots.interfaces.IRobotKnowledge;
@@ -22,7 +23,7 @@ import gui.interfaces.IUpdateUi;
 public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnvInit, IUpdateUi> implements IEnvInfos, Iinteragir, IEnvInit{
 	
 	private List<Boite> boiteList = new ArrayList<Boite>();
-	private Map<Point, Cellule> cellList = new HashMap<Point, Cellule>();
+	private ConcurrentHashMap<Point, Cellule> cellList = new ConcurrentHashMap<Point, Cellule>();
 	private List<Nest> nests = new ArrayList<Nest>(); 
 	private Map<Color, Point> nestsCoords = new HashMap<Color, Point>();
 	
@@ -93,7 +94,6 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 	public Point generateBoite(List<Point> availableCells){
 		Color color;
 		int cellIndex;
-		System.out.println(availableCells.size());
 		cellIndex = new Random().nextInt(availableCells.size());
 		
 		float randomValue = new Random().nextInt(3);
@@ -144,7 +144,6 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 				cellList.get(oldPoint).setEmpty();
 				cellList.get(newPoint).robotNotCaryingBox(idRobot, color);
 				this.requires().updateOutput().updateCell(cellList.get(newPoint));
-				System.out.println("STATUT "+cellList.get(oldPoint).getStatus());
 				this.requires().updateOutput().updateCell(cellList.get(oldPoint));
 				return true;
 			} else {
@@ -160,7 +159,6 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 				cellList.get(oldPoint).setEmpty();
 				cellList.get(newPoint).robotCaryingBox(idRobot, robotColor, cellList.get(newPoint).getBox());
 				this.requires().updateOutput().updateCell(cellList.get(newPoint));
-				System.out.println("STATUT "+cellList.get(oldPoint).getStatus());
 				this.requires().updateOutput().updateCell(cellList.get(oldPoint));
 				return true;
 			}
@@ -179,7 +177,6 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 				cellList.get(oldPoint).setEmpty();
 				cellList.get(newPoint).robotCaryingBox(idRobot, color, boite);
 				this.requires().updateOutput().updateCell(cellList.get(newPoint));
-				System.out.println("STATUT "+cellList.get(oldPoint).getStatus());
 				this.requires().updateOutput().updateCell(cellList.get(oldPoint));
 				return true;
 			} else {
@@ -202,6 +199,9 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 		List<Cellule> adjacentCells = new ArrayList<Cellule>();
 		List<Integer> coordX = new ArrayList<Integer>();
 		List<Integer> coordY = new ArrayList<Integer>();
+		
+		synchronized (cellList) {
+
 		
 		if(robotCoord.x != 0) {
 			coordX.add(new Integer(robotCoord.x-1));
@@ -231,13 +231,21 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 			}
 		}
 		
+	}
 		return adjacentCells;
 	}
 
 	@Override
 	public void doNothing() {
-		// TODO Auto-generated method stub
-		
+		// rien à implementer
+	}
+
+	@Override
+	public void suicide(Point cell) {
+		synchronized (cellList) {
+			cellList.get(cell).setEmpty();
+			this.requires().updateOutput().updateCell(cellList.get(cell));
+		}
 	}
 
 
