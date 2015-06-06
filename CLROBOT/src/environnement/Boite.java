@@ -9,13 +9,15 @@ public class Boite {
 
 	}
 	
+	public Boite(Boite boite) {
+		this.couleur = boite.couleur;
+	}
+	
 	public Color getCouleur() {
 		return couleur;
 	}
 	
 	private Color couleur;
-	private int positionX;
-	private int positionY;
 	
 	
 	

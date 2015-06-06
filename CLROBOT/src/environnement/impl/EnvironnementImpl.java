@@ -248,5 +248,17 @@ public class EnvironnementImpl extends Environnement<Iinteragir, IEnvInfos, IEnv
 		}
 	}
 
+	@Override
+	public void exchange(String idRobot, Color robotColor, Cellule nouvelleBoite, Boite ancienneBoite, Cellule celluleRobot) {
+		synchronized (cellList) {
+			Color color = nouvelleBoite.getBox().getCouleur();
+			this.cellList.get(nouvelleBoite.getCoordinates()).setBox(ancienneBoite);
+			cellList.get(celluleRobot.getCoordinates()).robotCaryingBox(idRobot, robotColor, new Boite(color));
+			this.requires().updateOutput().updateCell(this.cellList.get(nouvelleBoite.getCoordinates()));
+			this.requires().updateOutput().updateCell(this.cellList.get(celluleRobot.getCoordinates()));
+		}
+		
+	}
+
 
 }

@@ -12,6 +12,9 @@ namespace clrobots {
 	
 	//Composant permettant l'affichage
 	
+	ecosystem MailBoxEco {
+		
+	}
 	
 	ecosystem EcoRobotAgents [Actionable, Context, SelfKnowledge] {
 		

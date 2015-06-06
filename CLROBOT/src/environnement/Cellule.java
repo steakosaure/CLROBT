@@ -28,7 +28,7 @@ public class Cellule {
 	public void robotCaryingBox(String robotId, Color robotColor, Boite box) {
 		this.setRobotId(robotId);
 		this.setRobotColor(robotColor);
-		this.box = box;
+		this.box = new Boite(box);
 		if (this.status != CellStatus.NEST){
 			this.status = CellStatus.ROBOTWITHBOX;
 		}
@@ -52,7 +52,7 @@ public class Cellule {
 	}
 	
 	public void setBox(Boite box){
-		this.box = box;
+		this.box = new Boite(box);
 		this.status = CellStatus.BOX;
 	}
 	

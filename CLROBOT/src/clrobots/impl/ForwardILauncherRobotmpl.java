@@ -80,6 +80,13 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 		public void suicide(Point cell) {
 			eco_requires().k().suicide(cell);
 		}
+
+		@Override
+		public void exchange(String idRobot, Color robotColor,
+				Cellule nouvelleBoite, Boite ancienneBoite, Cellule celluleRobot) {
+			eco_requires().k().exchange(idRobot, robotColor, nouvelleBoite, ancienneBoite, celluleRobot);
+			
+		}
 		
 	}
 

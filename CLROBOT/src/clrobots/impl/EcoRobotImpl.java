@@ -101,7 +101,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 
 			@Override
 			public void makePerception() {
-				System.out.println(id+" : Perception");
+				System.out.println(id+" : Perception  " + "ENERGIE :"+energyLevel);
 				adjacentCells = this.requires().context().getAdjacentCells(coord.getCoordinates());
 			}
 
@@ -117,7 +117,6 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			}
 
 			public Cellule getNearestCellule(Point destination, List<Cellule> cells){
-				System.out.println("destination ("+destination.x+","+destination.y+")");
 				Cellule depart = null;
 				if (!cells.isEmpty()){
 					for  (Cellule cell : cells) {
@@ -125,17 +124,14 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 							depart = cell;
 						} else {
 							double dist1 = depart.getCoordinates().distance(destination);
-							System.out.println("distance de depart"+ depart.getCoordinates() +" et destination"+ destination + "= "+dist1 );
 							double dist2 = cell.getCoordinates().distance(destination);
 
-							System.out.println("distance de cell"+ cell.getCoordinates() +" et destination"+ destination + "= "+dist2 );
 							if (dist2 - dist1 < 0){
 								depart = cell;
 							}
 						}
 					}
 
-					System.out.println("currentCoords=" + coord.getCoordinates()+ "  nid="+destination+"   cellule depart="+depart.getCoordinates());
 					return depart;
 				} else {
 					return coord;
@@ -182,16 +178,18 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				}				
 
 
+				// SI PAS DE BOITE et PAS DE BOITES A PRENDRE, SE DEPLACER
 				if (boite == null && containingBoxCells.isEmpty()){
-					/*Si j'ai pas de boite et rien en vue alors se déplace aléatoirement */
+
 					List<Cellule> freeCells = getFreeCellulesFrom(adjacentCells);
-					
+
+					// SI BLOQUE
 					if(freeCells.size() > 0) {
-						
+
 						if(freeCells.size() != 1 && freeCells.contains(previousCell)) {
 							freeCells.remove(freeCells.indexOf(previousCell));
 						}
-						
+
 						int cellIndex = new Random().nextInt(freeCells.size());
 						System.out.println(id+" se d�place de ("+coord.getCoordinates().x+","+ coord.getCoordinates().y+") a ("
 								+ adjacentCells.get(cellIndex).getCoordinates().x+","+ adjacentCells.get(cellIndex).getCoordinates().y+")");
@@ -204,6 +202,9 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					else {
 						this.requires().action().doNothing();
 					}
+
+
+					// SI PAS DE BOITE ET AU MOINS UNE BOITE DANS UNE CELLULE ADJACENTE
 				} else if(boite == null && !containingBoxCells.isEmpty()){
 					/*Si pas de boite et boites en vue alors prend la boite de la meme couleur en priorité */
 					Cellule choosenBox = chooseBox(containingBoxCells);
@@ -214,12 +215,13 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					if (this.requires().action().takeBox(id, robotColor, coord.getCoordinates(), choosenBox.getCoordinates())) {	
 						coord = choosenBox;
 					}
+					//SI J'AI UNE BOITE
 				} else if(boite != null ){
 
 					boolean adjNest = false;
 					Cellule cellNest = null;
 					System.out.println("NID de couleur "+boite.getCouleur()+" "+this.requires().knowledge().getNestCoord(boite.getCouleur()));
-					
+
 					for(Cellule adjCell: adjacentCells){
 						if(adjCell.getCoordinates().x == this.requires().knowledge().getNestCoord(boite.getCouleur()).x 
 								&& adjCell.getCoordinates().y == this.requires().knowledge().getNestCoord(boite.getCouleur()).y) {
@@ -228,33 +230,56 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 							adjNest = true;
 							cellNest = adjCell;
 						}
-						else{
-						}
 					}
 
+					//SI JE SUIS A COTE DU NID JE DEPOSE LA BOITE
 					if(adjNest){/*Si une boite pas de la meme couleur et une boite en vue de la meme couleur alors deposer la boite*/
-						System.out.println(id+" pose boite ");
+						System.out.println(id + " pose boite ");
 
 						this.requires().action().putDownBox(cellNest.getCoordinates(), boite.getCouleur());
 						boite = null;
+
+						//SINON JE ME DEPLACE VERS LE NID
 					} else {
-						Point nestCoordinates = this.requires().knowledge().getNestCoord(boite.getCouleur());
-						System.out.println(nestCoordinates);
-						int nbFreeCells =  getFreeCellulesFrom(adjacentCells).size();
+						boolean exchange = false;
+						if(boite.getCouleur() != robotColor && !containingBoxCells.isEmpty()) {
+							Cellule choosenBox = chooseBox(containingBoxCells);
 
-						if(nbFreeCells == 0) {
+							if (choosenBox!= null && choosenBox.getBox().getCouleur() == robotColor) {
+								exchange = true;
 
-							System.out.println(id+" porte une boite mais peu pas bouger ");
-							this.requires().action().doNothing();
-						} else {
-							Cellule depart = getNearestCellule(nestCoordinates, getFreeCellulesFrom(adjacentCells));
-							if (depart != null){
-								System.out.println(id+" essai de bouger ");
 
-								if (this.requires().action().mooveRobotWithBox(id, robotColor, boite, coord.getCoordinates(), depart.getCoordinates())) {
-									coord = depart;
+								System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAA "+choosenBox.getBox().getCouleur());
+								Boite nouvelleBoite = new Boite(choosenBox.getBox());
+								this.requires().action().exchange(id, robotColor, choosenBox, boite, coord);
+								boite = nouvelleBoite;
+
+								System.out.println("BBBBBBBBBBBBBBB "+boite.getCouleur());
+								
+							}
+						}
+
+						if(!exchange) {
+							Point nestCoordinates = this.requires().knowledge().getNestCoord(boite.getCouleur());
+							System.out.println(nestCoordinates);
+							int nbFreeCells =  getFreeCellulesFrom(adjacentCells).size();
+
+							//SI JE SUIS BLOQUE J'ATTEND
+							if(nbFreeCells == 0) {
+
+								System.out.println(id+" porte une boite mais peu pas bouger ");
+								this.requires().action().doNothing();
+								//SINON J'AVANCE
+							} else {
+								Cellule depart = getNearestCellule(nestCoordinates, getFreeCellulesFrom(adjacentCells));
+								if (depart != null){
+									System.out.println(id+" essai de bouger ");
+
+									if (this.requires().action().mooveRobotWithBox(id, robotColor, boite, coord.getCoordinates(), depart.getCoordinates())) {
+										coord = depart;
+									}
+
 								}
-
 							}
 						}
 					}
@@ -280,13 +305,13 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 				System.out.println(id+" : Action moveRobotWitoutBox");
 				boolean b = false;
 				energyLevel--;
-				
+
 				if(energyLevel <= 0) {
 					suicide(oldPoint);
 				} else {
 					b = this.requires().interagir().mooveRobotWithoutBox(idRobot, color, oldPoint, newPoint);
 				}
-				
+
 				this.requires().finishedCycle().endOfCycleAlert(idRobot);
 				return b;
 			}
@@ -296,13 +321,13 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					Boite boite, Point oldPoint, Point newPoint) {
 				boolean b = false;
 				energyLevel--;
-				
+
 				if(energyLevel == 0) {
 					suicide(oldPoint);
 				} else {
 					b = this.requires().interagir().mooveRobotWithBox(idRobot, color, boite, oldPoint, newPoint);
 				}
-				
+
 				this.requires().finishedCycle().endOfCycleAlert(idRobot);
 				return b;
 
@@ -317,18 +342,21 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			@Override
 			public void putDownBox(Point point, Color color) {
 				this.requires().interagir().putDownBox(point, color);
-				
+
 				int treat = 0;
-				
+
 				if(color == robotColor) {
 					treat = (int) MAXNJ *2 / 3;
 				} else {
 					treat = (int) MAXNJ / 3;
 				}
-				energyLevel += MAXNJ;
+				energyLevel += treat; 
+
+				if(energyLevel > MAXNJ) energyLevel = MAXNJ;
+
 				this.requires().finishedCycle().endOfCycleAlert(id);
 			}
-			
+
 			@Override
 			public void doNothing() {
 				this.requires().finishedCycle().endOfCycleAlert(id);
@@ -337,7 +365,7 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 			public void suicide(Point cell) {
 				synchronized (robotsMap) {
 					Runnable robot = robotsMap.get(id);
-					
+
 					ConcurrentHashMap<String, Runnable> nouvelleMap = new ConcurrentHashMap<String, Runnable>();
 					for(String idRobot: robotsMap.keySet()) {
 						if (!id.equals(idRobot)) {
@@ -347,8 +375,16 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 					robotsMap = nouvelleMap;
 					eco_requires().threads().setAgentsMap(robotsMap);
 				}
-				
+
 				this.requires().interagir().suicide(cell);
+			}
+			@Override
+			public void exchange(String idRobot, Color robotColor,
+					Cellule nouvelleBoite, Boite ancienneBoite,
+					Cellule celluleRobot) {
+				this.requires().interagir().exchange(idRobot, robotColor, nouvelleBoite, ancienneBoite, celluleRobot);
+				this.requires().finishedCycle().endOfCycleAlert(idRobot);
+				
 			}
 
 		}
