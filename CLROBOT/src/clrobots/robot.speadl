@@ -1,6 +1,5 @@
 import clrobots.interfaces.CycleAlert
 import clrobots.interfaces.Do
-import clrobots.interfaces.ICreateRobot
 import clrobots.interfaces.ITakeThreads
 import environnement.Cellule
 import java.awt.Color
@@ -11,12 +10,7 @@ namespace clrobots {
 	
 	
 	//Composant permettant l'affichage
-	
-	ecosystem MailBoxEco {
-		
-	}
-	
-	ecosystem EcoRobotAgents [Actionable, Context, SelfKnowledge] {
+	ecosystem EcoRobotAgents [Actionable, Context, SelfKnowledge, Push, Pull] {
 		
 			requires threads: ITakeThreads
 				
@@ -24,6 +18,8 @@ namespace clrobots {
 			
 			species Robot (id: String, color: Color, position: Cellule, nests: Map[Color,Point]) {
 				
+				requires pushMessage: Push
+				requires pullMessage: Pull 
 				requires envInteraction: Actionable
 				requires envContext: Context
 				provides launchCycle : Do = percevoir.perception	
@@ -31,20 +27,24 @@ namespace clrobots {
 				
 				part knowledge: Knowledge[SelfKnowledge]
 				
-				part percevoir: Percevoir[Context, SelfKnowledge]{
+				part percevoir: Percevoir[Context, SelfKnowledge, Pull]{
 					bind decision to decider.decision
 					bind knowledge to knowledge.selfKnowledge
 					bind context to envContext
+					bind getMessage to pullMessage
 				}
 				
-				part decider: Decider[Actionable, SelfKnowledge]{
+				part decider: Decider[Actionable, SelfKnowledge, Push]{
 					bind action to agir.action
 					bind knowledge to knowledge.selfKnowledge
+					bind sendMessage to agir.sendMessage
 				}
-				part agir: Agir[Actionable, SelfKnowledge] {
+				part agir: Agir[Actionable, SelfKnowledge, Push] {
 					bind finishedCycle to finishedCycle
 					bind interagir to envInteraction
 					bind knowledge to knowledge.selfKnowledge
+					bind push to pushMessage
+				
 			}
 		}
 	}
@@ -54,24 +54,29 @@ namespace clrobots {
 		
 	}
 		
-	component Percevoir [Context, SelfKnowledge] {
+	component Percevoir [Context, SelfKnowledge, Pull] {
 		provides perception : Do
 		requires context: Context
 		requires knowledge: SelfKnowledge
 		requires decision: Do
+		requires getMessage: Pull
 	}
 	
-	component Decider [Actionable, SelfKnowledge] {
+	component Decider [Actionable, SelfKnowledge, Push]{
 		provides decision : Do
 		requires action: Actionable
 		requires knowledge: SelfKnowledge
+		requires sendMessage: Push
+		
 	}
 	
-	component Agir [Actionable, SelfKnowledge] {
+	component Agir [Actionable, SelfKnowledge, Push] {
 		provides action : Actionable
 		requires interagir: Actionable
 		requires finishedCycle : CycleAlert
 		requires knowledge: SelfKnowledge 
+		provides sendMessage: Push
+		requires push: Push
 	}
 	
 	

@@ -12,36 +12,24 @@ import clrobots.interfaces.Iinteragir
 
 namespace clrobots{
 	
-
-	
-	ecosystem ForwardLauncher{
-		species AgentForward{
-			provides finishedCycle: CycleAlert
-			requires launchCycle: Do
-		}
-		
-		requires finishedCycle: CycleAlert
-		provides launchCycle: Do
-	}
-	
 	component Launcher{
 		provides call: Callable
 		provides finishedCycle: CycleAlert
 		provides threads: ITakeThreads 
 	}
 	
-	ecosystem RobotForwardAssemblyEco [Actionable, Context, SelfKnowledge]{
+	ecosystem RobotForwardAssemblyEco [Actionable, Context, SelfKnowledge,  Push, Pull]{
 		requires threads: ITakeThreads
 		requires finishedCycle: CycleAlert
 		requires envInfos: Context
 		requires interagir: Actionable
 		provides createRobot: ICreateRobot
 		
-		part ecoAE: EcoRobotAgents[Actionable, Context, SelfKnowledge] {
+		part ecoAE: EcoRobotAgents[Actionable, Context, SelfKnowledge, Push, Pull] {
 			bind threads to threads
 		}
 		
-		part fw: Forward[CycleAlert, Context, Actionable]{
+		part fw: Forward[CycleAlert, Context, Actionable, Push, Pull]{
 			bind i to finishedCycle
 			bind j to envInfos
 			bind k to interagir
@@ -53,14 +41,16 @@ namespace clrobots{
 				bind finishedCycle to aFW.a
 				bind envInteraction to aFW.c
 				bind envContext to aFW.b
+				bind pushMessage to aFW.push
+				bind pullMessage to aFW.pull
 			}
-			use aFW: fw.Agent
+			use aFW: fw.Agent(id)
 		}
 		
 		
 	}
 	
-	ecosystem ScenarioEco[Actionable, Context, ContextInit, SelfKnowledge, UpdateOutput]{
+	ecosystem ScenarioEco[Actionable, Context, ContextInit, SelfKnowledge, UpdateOutput, Push, Pull]{
 		
 		part environnement: Environnement[Actionable, Context, ContextInit, UpdateOutput] {
 			bind updateOutput to gui.updateGUI
@@ -71,7 +61,7 @@ namespace clrobots{
 			bind initEnvironnement to environnement.envInit
 		}
 		
-		part rfAssemblyEco: RobotForwardAssemblyEco[Actionable, Context, SelfKnowledge] {
+		part rfAssemblyEco: RobotForwardAssemblyEco[Actionable, Context, SelfKnowledge, Push, Pull] {
 			bind threads to launcher.threads
 			bind finishedCycle to launcher.finishedCycle
 			bind envInfos to environnement.envInfos
@@ -82,9 +72,10 @@ namespace clrobots{
 
 	}
 	
-	ecosystem Forward[I,J,K]{
-		 species Agent{
-		 	
+	ecosystem Forward[I,J,K, Push, Pull]{
+		 species Agent(id: String){
+		 	provides push: Push
+		 	provides pull: Pull
 		 	provides a: I
 		 	provides b: J
 		 	provides c: K
@@ -93,6 +84,7 @@ namespace clrobots{
 		 requires i: I
 		 requires j: J
 		 requires k: K
+		 provides push: Push
 	} 
 	
 

@@ -3,8 +3,8 @@ package clrobots;
 import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Percevoir<Context, SelfKnowledge> {
-  public interface Requires<Context, SelfKnowledge> {
+public abstract class Percevoir<Context, SelfKnowledge, Pull> {
+  public interface Requires<Context, SelfKnowledge, Pull> {
     /**
      * This can be called by the implementation to access this required port.
      * 
@@ -22,12 +22,18 @@ public abstract class Percevoir<Context, SelfKnowledge> {
      * 
      */
     public Do decision();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public Pull getMessage();
   }
   
-  public interface Component<Context, SelfKnowledge> extends Percevoir.Provides<Context, SelfKnowledge> {
+  public interface Component<Context, SelfKnowledge, Pull> extends Percevoir.Provides<Context, SelfKnowledge, Pull> {
   }
   
-  public interface Provides<Context, SelfKnowledge> {
+  public interface Provides<Context, SelfKnowledge, Pull> {
     /**
      * This can be called to access the provided port.
      * 
@@ -35,13 +41,13 @@ public abstract class Percevoir<Context, SelfKnowledge> {
     public Do perception();
   }
   
-  public interface Parts<Context, SelfKnowledge> {
+  public interface Parts<Context, SelfKnowledge, Pull> {
   }
   
-  public static class ComponentImpl<Context, SelfKnowledge> implements Percevoir.Component<Context, SelfKnowledge>, Percevoir.Parts<Context, SelfKnowledge> {
-    private final Percevoir.Requires<Context, SelfKnowledge> bridge;
+  public static class ComponentImpl<Context, SelfKnowledge, Pull> implements Percevoir.Component<Context, SelfKnowledge, Pull>, Percevoir.Parts<Context, SelfKnowledge, Pull> {
+    private final Percevoir.Requires<Context, SelfKnowledge, Pull> bridge;
     
-    private final Percevoir<Context, SelfKnowledge> implementation;
+    private final Percevoir<Context, SelfKnowledge, Pull> implementation;
     
     public void start() {
       this.implementation.start();
@@ -56,7 +62,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
       assert this.perception == null: "This is a bug.";
       this.perception = this.implementation.make_perception();
       if (this.perception == null) {
-      	throw new RuntimeException("make_perception() in clrobots.Percevoir<Context, SelfKnowledge> should not return null.");
+      	throw new RuntimeException("make_perception() in clrobots.Percevoir<Context, SelfKnowledge, Pull> should not return null.");
       }
     }
     
@@ -64,7 +70,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
       init_perception();
     }
     
-    public ComponentImpl(final Percevoir<Context, SelfKnowledge> implem, final Percevoir.Requires<Context, SelfKnowledge> b, final boolean doInits) {
+    public ComponentImpl(final Percevoir<Context, SelfKnowledge, Pull> implem, final Percevoir.Requires<Context, SelfKnowledge, Pull> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -101,7 +107,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
    */
   private boolean started = false;;
   
-  private Percevoir.ComponentImpl<Context, SelfKnowledge> selfComponent;
+  private Percevoir.ComponentImpl<Context, SelfKnowledge, Pull> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -118,7 +124,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Percevoir.Provides<Context, SelfKnowledge> provides() {
+  protected Percevoir.Provides<Context, SelfKnowledge, Pull> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -137,7 +143,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Percevoir.Requires<Context, SelfKnowledge> requires() {
+  protected Percevoir.Requires<Context, SelfKnowledge, Pull> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -149,7 +155,7 @@ public abstract class Percevoir<Context, SelfKnowledge> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Percevoir.Parts<Context, SelfKnowledge> parts() {
+  protected Percevoir.Parts<Context, SelfKnowledge, Pull> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -161,12 +167,12 @@ public abstract class Percevoir<Context, SelfKnowledge> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Percevoir.Component<Context, SelfKnowledge> _newComponent(final Percevoir.Requires<Context, SelfKnowledge> b, final boolean start) {
+  public synchronized Percevoir.Component<Context, SelfKnowledge, Pull> _newComponent(final Percevoir.Requires<Context, SelfKnowledge, Pull> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Percevoir has already been used to create a component, use another one.");
     }
     this.init = true;
-    Percevoir.ComponentImpl<Context, SelfKnowledge>  _comp = new Percevoir.ComponentImpl<Context, SelfKnowledge>(this, b, true);
+    Percevoir.ComponentImpl<Context, SelfKnowledge, Pull>  _comp = new Percevoir.ComponentImpl<Context, SelfKnowledge, Pull>(this, b, true);
     if (start) {
     	_comp.start();
     }

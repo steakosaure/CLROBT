@@ -11,12 +11,14 @@ import clrobots.impl.EcoRobotImpl;
 import clrobots.impl.ForwardILauncherRobotmpl;
 import clrobots.interfaces.CycleAlert;
 import clrobots.interfaces.ICreateRobot;
+import clrobots.interfaces.IPullMessage;
+import clrobots.interfaces.IPushMessage;
 import clrobots.interfaces.IRobotKnowledge;
 import clrobots.interfaces.Iinteragir;
 import environnement.Cellule;
 import environnement.interfaces.IEnvInfos;
 
-public class RobotForwardAssemblyEcoImpl extends RobotForwardAssemblyEco<Iinteragir, IEnvInfos, IRobotKnowledge> implements ICreateRobot {
+public class RobotForwardAssemblyEcoImpl extends RobotForwardAssemblyEco<Iinteragir, IEnvInfos, IRobotKnowledge, IPushMessage, IPullMessage> implements ICreateRobot {
 
 	int id;
 	
@@ -30,12 +32,12 @@ public class RobotForwardAssemblyEcoImpl extends RobotForwardAssemblyEco<Iintera
 	}
 
 	@Override
-	protected EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKnowledge> make_ecoAE() {
+	protected EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKnowledge, IPushMessage, IPullMessage> make_ecoAE() {
 		return new EcoRobotImpl();
 	}
 
 	@Override
-	protected Forward<CycleAlert, IEnvInfos, Iinteragir> make_fw() {
+	protected Forward<CycleAlert, IEnvInfos, Iinteragir, IPushMessage, IPullMessage> make_fw() {
 		return new ForwardILauncherRobotmpl();
 	}
 
@@ -48,5 +50,6 @@ public class RobotForwardAssemblyEcoImpl extends RobotForwardAssemblyEco<Iintera
 		return robotId;
 		
 	}
+
 
 }

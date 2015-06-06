@@ -11,8 +11,8 @@ import java.awt.Point;
 import java.util.Map;
 
 @SuppressWarnings("all")
-public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> {
-  public interface Requires<Actionable, Context, SelfKnowledge> {
+public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> {
+  public interface Requires<Actionable, Context, SelfKnowledge, Push, Pull> {
     /**
      * This can be called by the implementation to access this required port.
      * 
@@ -38,10 +38,10 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
     public Actionable interagir();
   }
   
-  public interface Component<Actionable, Context, SelfKnowledge> extends RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge> {
+  public interface Component<Actionable, Context, SelfKnowledge, Push, Pull> extends RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge, Push, Pull> {
   }
   
-  public interface Provides<Actionable, Context, SelfKnowledge> {
+  public interface Provides<Actionable, Context, SelfKnowledge, Push, Pull> {
     /**
      * This can be called to access the provided port.
      * 
@@ -49,32 +49,32 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
     public ICreateRobot createRobot();
   }
   
-  public interface Parts<Actionable, Context, SelfKnowledge> {
+  public interface Parts<Actionable, Context, SelfKnowledge, Push, Pull> {
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE();
+    public EcoRobotAgents.Component<Actionable, Context, SelfKnowledge, Push, Pull> ecoAE();
     
     /**
      * This can be called by the implementation to access the part and its provided ports.
      * It will be initialized after the required ports are initialized and before the provided ports are initialized.
      * 
      */
-    public Forward.Component<CycleAlert, Context, Actionable> fw();
+    public Forward.Component<CycleAlert, Context, Actionable, Push, Pull> fw();
   }
   
-  public static class ComponentImpl<Actionable, Context, SelfKnowledge> implements RobotForwardAssemblyEco.Component<Actionable, Context, SelfKnowledge>, RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge> {
-    private final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge> bridge;
+  public static class ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull> implements RobotForwardAssemblyEco.Component<Actionable, Context, SelfKnowledge, Push, Pull>, RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge, Push, Pull> {
+    private final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge, Push, Pull> bridge;
     
-    private final RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> implementation;
+    private final RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> implementation;
     
     public void start() {
       assert this.ecoAE != null: "This is a bug.";
-      ((EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge>) this.ecoAE).start();
+      ((EcoRobotAgents.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>) this.ecoAE).start();
       assert this.fw != null: "This is a bug.";
-      ((Forward.ComponentImpl<CycleAlert, Context, Actionable>) this.fw).start();
+      ((Forward.ComponentImpl<CycleAlert, Context, Actionable, Push, Pull>) this.fw).start();
       this.implementation.start();
       this.implementation.started = true;
     }
@@ -84,7 +84,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       assert this.implem_ecoAE == null: "This is a bug.";
       this.implem_ecoAE = this.implementation.make_ecoAE();
       if (this.implem_ecoAE == null) {
-      	throw new RuntimeException("make_ecoAE() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> should not return null.");
+      	throw new RuntimeException("make_ecoAE() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> should not return null.");
       }
       this.ecoAE = this.implem_ecoAE._newComponent(new BridgeImpl_ecoAE(), false);
       
@@ -95,7 +95,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       assert this.implem_fw == null: "This is a bug.";
       this.implem_fw = this.implementation.make_fw();
       if (this.implem_fw == null) {
-      	throw new RuntimeException("make_fw() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> should not return null.");
+      	throw new RuntimeException("make_fw() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> should not return null.");
       }
       this.fw = this.implem_fw._newComponent(new BridgeImpl_fw(), false);
       
@@ -110,7 +110,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       assert this.createRobot == null: "This is a bug.";
       this.createRobot = this.implementation.make_createRobot();
       if (this.createRobot == null) {
-      	throw new RuntimeException("make_createRobot() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> should not return null.");
+      	throw new RuntimeException("make_createRobot() in clrobots.RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> should not return null.");
       }
     }
     
@@ -118,7 +118,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       init_createRobot();
     }
     
-    public ComponentImpl(final RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge> implem, final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge> b, final boolean doInits) {
+    public ComponentImpl(final RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge, Push, Pull> implem, final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge, Push, Pull> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -140,25 +140,25 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       return this.createRobot;
     }
     
-    private EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE;
+    private EcoRobotAgents.Component<Actionable, Context, SelfKnowledge, Push, Pull> ecoAE;
     
-    private EcoRobotAgents<Actionable, Context, SelfKnowledge> implem_ecoAE;
+    private EcoRobotAgents<Actionable, Context, SelfKnowledge, Push, Pull> implem_ecoAE;
     
-    private final class BridgeImpl_ecoAE implements EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge> {
+    private final class BridgeImpl_ecoAE implements EcoRobotAgents.Requires<Actionable, Context, SelfKnowledge, Push, Pull> {
       public final ITakeThreads threads() {
         return RobotForwardAssemblyEco.ComponentImpl.this.bridge.threads();
       }
     }
     
-    public final EcoRobotAgents.Component<Actionable, Context, SelfKnowledge> ecoAE() {
+    public final EcoRobotAgents.Component<Actionable, Context, SelfKnowledge, Push, Pull> ecoAE() {
       return this.ecoAE;
     }
     
-    private Forward.Component<CycleAlert, Context, Actionable> fw;
+    private Forward.Component<CycleAlert, Context, Actionable, Push, Pull> fw;
     
-    private Forward<CycleAlert, Context, Actionable> implem_fw;
+    private Forward<CycleAlert, Context, Actionable, Push, Pull> implem_fw;
     
-    private final class BridgeImpl_fw implements Forward.Requires<CycleAlert, Context, Actionable> {
+    private final class BridgeImpl_fw implements Forward.Requires<CycleAlert, Context, Actionable, Push, Pull> {
       public final CycleAlert i() {
         return RobotForwardAssemblyEco.ComponentImpl.this.bridge.finishedCycle();
       }
@@ -172,47 +172,47 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       }
     }
     
-    public final Forward.Component<CycleAlert, Context, Actionable> fw() {
+    public final Forward.Component<CycleAlert, Context, Actionable, Push, Pull> fw() {
       return this.fw;
     }
   }
   
-  public static class DynamicAssembly<Actionable, Context, SelfKnowledge> {
-    public interface Requires<Actionable, Context, SelfKnowledge> {
+  public static class DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> {
+    public interface Requires<Actionable, Context, SelfKnowledge, Push, Pull> {
     }
     
-    public interface Component<Actionable, Context, SelfKnowledge> extends RobotForwardAssemblyEco.DynamicAssembly.Provides<Actionable, Context, SelfKnowledge> {
+    public interface Component<Actionable, Context, SelfKnowledge, Push, Pull> extends RobotForwardAssemblyEco.DynamicAssembly.Provides<Actionable, Context, SelfKnowledge, Push, Pull> {
     }
     
-    public interface Provides<Actionable, Context, SelfKnowledge> {
+    public interface Provides<Actionable, Context, SelfKnowledge, Push, Pull> {
     }
     
-    public interface Parts<Actionable, Context, SelfKnowledge> {
+    public interface Parts<Actionable, Context, SelfKnowledge, Push, Pull> {
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE();
+      public EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge, Push, Pull> agentE();
       
       /**
        * This can be called by the implementation to access the part and its provided ports.
        * It will be initialized after the required ports are initialized and before the provided ports are initialized.
        * 
        */
-      public Forward.Agent.Component<CycleAlert, Context, Actionable> aFW();
+      public Forward.Agent.Component<CycleAlert, Context, Actionable, Push, Pull> aFW();
     }
     
-    public static class ComponentImpl<Actionable, Context, SelfKnowledge> implements RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge>, RobotForwardAssemblyEco.DynamicAssembly.Parts<Actionable, Context, SelfKnowledge> {
-      private final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge> bridge;
+    public static class ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull> implements RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge, Push, Pull>, RobotForwardAssemblyEco.DynamicAssembly.Parts<Actionable, Context, SelfKnowledge, Push, Pull> {
+      private final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge, Push, Pull> bridge;
       
-      private final RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> implementation;
+      private final RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> implementation;
       
       public void start() {
         assert this.agentE != null: "This is a bug.";
-        ((EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge>) this.agentE).start();
+        ((EcoRobotAgents.Robot.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>) this.agentE).start();
         assert this.aFW != null: "This is a bug.";
-        ((Forward.Agent.ComponentImpl<CycleAlert, Context, Actionable>) this.aFW).start();
+        ((Forward.Agent.ComponentImpl<CycleAlert, Context, Actionable, Push, Pull>) this.aFW).start();
         this.implementation.start();
         this.implementation.started = true;
       }
@@ -240,7 +240,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
         
       }
       
-      public ComponentImpl(final RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> implem, final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge> b, final boolean doInits) {
+      public ComponentImpl(final RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> implem, final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge, Push, Pull> b, final boolean doInits) {
         this.bridge = b;
         this.implementation = implem;
         
@@ -256,9 +256,9 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
         }
       }
       
-      private EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE;
+      private EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge, Push, Pull> agentE;
       
-      private final class BridgeImpl_ecoAE_agentE implements EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge> {
+      private final class BridgeImpl_ecoAE_agentE implements EcoRobotAgents.Robot.Requires<Actionable, Context, SelfKnowledge, Push, Pull> {
         public final CycleAlert finishedCycle() {
           return RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl.this.aFW().a();
         }
@@ -270,18 +270,26 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
         public final Context envContext() {
           return RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl.this.aFW().b();
         }
+        
+        public final Push pushMessage() {
+          return RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl.this.aFW().push();
+        }
+        
+        public final Pull pullMessage() {
+          return RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl.this.aFW().pull();
+        }
       }
       
-      public final EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge> agentE() {
+      public final EcoRobotAgents.Robot.Component<Actionable, Context, SelfKnowledge, Push, Pull> agentE() {
         return this.agentE;
       }
       
-      private Forward.Agent.Component<CycleAlert, Context, Actionable> aFW;
+      private Forward.Agent.Component<CycleAlert, Context, Actionable, Push, Pull> aFW;
       
-      private final class BridgeImpl_fw_aFW implements Forward.Agent.Requires<CycleAlert, Context, Actionable> {
+      private final class BridgeImpl_fw_aFW implements Forward.Agent.Requires<CycleAlert, Context, Actionable, Push, Pull> {
       }
       
-      public final Forward.Agent.Component<CycleAlert, Context, Actionable> aFW() {
+      public final Forward.Agent.Component<CycleAlert, Context, Actionable, Push, Pull> aFW() {
         return this.aFW;
       }
     }
@@ -300,7 +308,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      */
     private boolean started = false;;
     
-    private RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge> selfComponent;
+    private RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull> selfComponent;
     
     /**
      * Can be overridden by the implementation.
@@ -317,7 +325,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      * This can be called by the implementation to access the provided ports.
      * 
      */
-    protected RobotForwardAssemblyEco.DynamicAssembly.Provides<Actionable, Context, SelfKnowledge> provides() {
+    protected RobotForwardAssemblyEco.DynamicAssembly.Provides<Actionable, Context, SelfKnowledge, Push, Pull> provides() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -329,7 +337,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      * This can be called by the implementation to access the required ports.
      * 
      */
-    protected RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge> requires() {
+    protected RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge, Push, Pull> requires() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -341,7 +349,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      * This can be called by the implementation to access the parts and their provided ports.
      * 
      */
-    protected RobotForwardAssemblyEco.DynamicAssembly.Parts<Actionable, Context, SelfKnowledge> parts() {
+    protected RobotForwardAssemblyEco.DynamicAssembly.Parts<Actionable, Context, SelfKnowledge, Push, Pull> parts() {
       assert this.selfComponent != null: "This is a bug.";
       if (!this.init) {
       	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -349,33 +357,33 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
       return this.selfComponent;
     }
     
-    private EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge> use_agentE;
+    private EcoRobotAgents.Robot<Actionable, Context, SelfKnowledge, Push, Pull> use_agentE;
     
-    private Forward.Agent<CycleAlert, Context, Actionable> use_aFW;
+    private Forward.Agent<CycleAlert, Context, Actionable, Push, Pull> use_aFW;
     
     /**
      * Not meant to be used to manually instantiate components (except for testing).
      * 
      */
-    public synchronized RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge> _newComponent(final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge> b, final boolean start) {
+    public synchronized RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge, Push, Pull> _newComponent(final RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge, Push, Pull> b, final boolean start) {
       if (this.init) {
       	throw new RuntimeException("This instance of DynamicAssembly has already been used to create a component, use another one.");
       }
       this.init = true;
-      RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge>  _comp = new RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge>(this, b, true);
+      RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>  _comp = new RobotForwardAssemblyEco.DynamicAssembly.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>(this, b, true);
       if (start) {
       	_comp.start();
       }
       return _comp;
     }
     
-    private RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge> ecosystemComponent;
+    private RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull> ecosystemComponent;
     
     /**
      * This can be called by the species implementation to access the provided ports of its ecosystem.
      * 
      */
-    protected RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge> eco_provides() {
+    protected RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge, Push, Pull> eco_provides() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -384,7 +392,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      * This can be called by the species implementation to access the required ports of its ecosystem.
      * 
      */
-    protected RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge> eco_requires() {
+    protected RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge, Push, Pull> eco_requires() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent.bridge;
     }
@@ -393,7 +401,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
      * This can be called by the species implementation to access the parts of its ecosystem and their provided ports.
      * 
      */
-    protected RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge> eco_parts() {
+    protected RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge, Push, Pull> eco_parts() {
       assert this.ecosystemComponent != null: "This is a bug.";
       return this.ecosystemComponent;
     }
@@ -413,7 +421,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    */
   private boolean started = false;;
   
-  private RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge> selfComponent;
+  private RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -430,7 +438,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge> provides() {
+  protected RobotForwardAssemblyEco.Provides<Actionable, Context, SelfKnowledge, Push, Pull> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -449,7 +457,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge> requires() {
+  protected RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge, Push, Pull> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -461,7 +469,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge> parts() {
+  protected RobotForwardAssemblyEco.Parts<Actionable, Context, SelfKnowledge, Push, Pull> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -474,25 +482,25 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract EcoRobotAgents<Actionable, Context, SelfKnowledge> make_ecoAE();
+  protected abstract EcoRobotAgents<Actionable, Context, SelfKnowledge, Push, Pull> make_ecoAE();
   
   /**
    * This should be overridden by the implementation to define how to create this sub-component.
    * This will be called once during the construction of the component to initialize this sub-component.
    * 
    */
-  protected abstract Forward<CycleAlert, Context, Actionable> make_fw();
+  protected abstract Forward<CycleAlert, Context, Actionable, Push, Pull> make_fw();
   
   /**
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized RobotForwardAssemblyEco.Component<Actionable, Context, SelfKnowledge> _newComponent(final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge> b, final boolean start) {
+  public synchronized RobotForwardAssemblyEco.Component<Actionable, Context, SelfKnowledge, Push, Pull> _newComponent(final RobotForwardAssemblyEco.Requires<Actionable, Context, SelfKnowledge, Push, Pull> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of RobotForwardAssemblyEco has already been used to create a component, use another one.");
     }
     this.init = true;
-    RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge>  _comp = new RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge>(this, b, true);
+    RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>  _comp = new RobotForwardAssemblyEco.ComponentImpl<Actionable, Context, SelfKnowledge, Push, Pull>(this, b, true);
     if (start) {
     	_comp.start();
     }
@@ -503,16 +511,16 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This should be overridden by the implementation to instantiate the implementation of the species.
    * 
    */
-  protected RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> make_DynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
-    return new RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge>();
+  protected RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> make_DynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
+    return new RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull>();
   }
   
   /**
    * Do not call, used by generated code.
    * 
    */
-  public RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> _createImplementationOfDynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
-    RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> implem = make_DynamicAssembly(id,color,position,nests);
+  public RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> _createImplementationOfDynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
+    RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> implem = make_DynamicAssembly(id,color,position,nests);
     if (implem == null) {
     	throw new RuntimeException("make_DynamicAssembly() in clrobots.RobotForwardAssemblyEco should not return null.");
     }
@@ -524,7 +532,7 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
     implem.use_agentE = this.selfComponent.implem_ecoAE._createImplementationOfRobot(id,color,position,nests);
     assert this.selfComponent.implem_fw != null: "This is a bug.";
     assert implem.use_aFW == null: "This is a bug.";
-    implem.use_aFW = this.selfComponent.implem_fw._createImplementationOfAgent();
+    implem.use_aFW = this.selfComponent.implem_fw._createImplementationOfAgent(id);
     return implem;
   }
   
@@ -532,8 +540,8 @@ public abstract class RobotForwardAssemblyEco<Actionable, Context, SelfKnowledge
    * This can be called to create an instance of the species from inside the implementation of the ecosystem.
    * 
    */
-  protected RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge> newDynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
-    RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge> _implem = _createImplementationOfDynamicAssembly(id,color,position,nests);
-    return _implem._newComponent(new RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge>() {},true);
+  protected RobotForwardAssemblyEco.DynamicAssembly.Component<Actionable, Context, SelfKnowledge, Push, Pull> newDynamicAssembly(final String id, final Color color, final Cellule position, final Map<Color, Point> nests) {
+    RobotForwardAssemblyEco.DynamicAssembly<Actionable, Context, SelfKnowledge, Push, Pull> _implem = _createImplementationOfDynamicAssembly(id,color,position,nests);
+    return _implem._newComponent(new RobotForwardAssemblyEco.DynamicAssembly.Requires<Actionable, Context, SelfKnowledge, Push, Pull>() {},true);
   }
 }

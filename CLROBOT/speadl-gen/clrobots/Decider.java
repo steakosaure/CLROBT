@@ -3,8 +3,8 @@ package clrobots;
 import clrobots.interfaces.Do;
 
 @SuppressWarnings("all")
-public abstract class Decider<Actionable, SelfKnowledge> {
-  public interface Requires<Actionable, SelfKnowledge> {
+public abstract class Decider<Actionable, SelfKnowledge, Push> {
+  public interface Requires<Actionable, SelfKnowledge, Push> {
     /**
      * This can be called by the implementation to access this required port.
      * 
@@ -16,12 +16,18 @@ public abstract class Decider<Actionable, SelfKnowledge> {
      * 
      */
     public SelfKnowledge knowledge();
+    
+    /**
+     * This can be called by the implementation to access this required port.
+     * 
+     */
+    public Push sendMessage();
   }
   
-  public interface Component<Actionable, SelfKnowledge> extends Decider.Provides<Actionable, SelfKnowledge> {
+  public interface Component<Actionable, SelfKnowledge, Push> extends Decider.Provides<Actionable, SelfKnowledge, Push> {
   }
   
-  public interface Provides<Actionable, SelfKnowledge> {
+  public interface Provides<Actionable, SelfKnowledge, Push> {
     /**
      * This can be called to access the provided port.
      * 
@@ -29,13 +35,13 @@ public abstract class Decider<Actionable, SelfKnowledge> {
     public Do decision();
   }
   
-  public interface Parts<Actionable, SelfKnowledge> {
+  public interface Parts<Actionable, SelfKnowledge, Push> {
   }
   
-  public static class ComponentImpl<Actionable, SelfKnowledge> implements Decider.Component<Actionable, SelfKnowledge>, Decider.Parts<Actionable, SelfKnowledge> {
-    private final Decider.Requires<Actionable, SelfKnowledge> bridge;
+  public static class ComponentImpl<Actionable, SelfKnowledge, Push> implements Decider.Component<Actionable, SelfKnowledge, Push>, Decider.Parts<Actionable, SelfKnowledge, Push> {
+    private final Decider.Requires<Actionable, SelfKnowledge, Push> bridge;
     
-    private final Decider<Actionable, SelfKnowledge> implementation;
+    private final Decider<Actionable, SelfKnowledge, Push> implementation;
     
     public void start() {
       this.implementation.start();
@@ -50,7 +56,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
       assert this.decision == null: "This is a bug.";
       this.decision = this.implementation.make_decision();
       if (this.decision == null) {
-      	throw new RuntimeException("make_decision() in clrobots.Decider<Actionable, SelfKnowledge> should not return null.");
+      	throw new RuntimeException("make_decision() in clrobots.Decider<Actionable, SelfKnowledge, Push> should not return null.");
       }
     }
     
@@ -58,7 +64,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
       init_decision();
     }
     
-    public ComponentImpl(final Decider<Actionable, SelfKnowledge> implem, final Decider.Requires<Actionable, SelfKnowledge> b, final boolean doInits) {
+    public ComponentImpl(final Decider<Actionable, SelfKnowledge, Push> implem, final Decider.Requires<Actionable, SelfKnowledge, Push> b, final boolean doInits) {
       this.bridge = b;
       this.implementation = implem;
       
@@ -95,7 +101,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
    */
   private boolean started = false;;
   
-  private Decider.ComponentImpl<Actionable, SelfKnowledge> selfComponent;
+  private Decider.ComponentImpl<Actionable, SelfKnowledge, Push> selfComponent;
   
   /**
    * Can be overridden by the implementation.
@@ -112,7 +118,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
    * This can be called by the implementation to access the provided ports.
    * 
    */
-  protected Decider.Provides<Actionable, SelfKnowledge> provides() {
+  protected Decider.Provides<Actionable, SelfKnowledge, Push> provides() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("provides() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if provides() is needed to initialise the component.");
@@ -131,7 +137,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
    * This can be called by the implementation to access the required ports.
    * 
    */
-  protected Decider.Requires<Actionable, SelfKnowledge> requires() {
+  protected Decider.Requires<Actionable, SelfKnowledge, Push> requires() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("requires() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if requires() is needed to initialise the component.");
@@ -143,7 +149,7 @@ public abstract class Decider<Actionable, SelfKnowledge> {
    * This can be called by the implementation to access the parts and their provided ports.
    * 
    */
-  protected Decider.Parts<Actionable, SelfKnowledge> parts() {
+  protected Decider.Parts<Actionable, SelfKnowledge, Push> parts() {
     assert this.selfComponent != null: "This is a bug.";
     if (!this.init) {
     	throw new RuntimeException("parts() can't be accessed until a component has been created from this implementation, use start() instead of the constructor if parts() is needed to initialise the component.");
@@ -155,12 +161,12 @@ public abstract class Decider<Actionable, SelfKnowledge> {
    * Not meant to be used to manually instantiate components (except for testing).
    * 
    */
-  public synchronized Decider.Component<Actionable, SelfKnowledge> _newComponent(final Decider.Requires<Actionable, SelfKnowledge> b, final boolean start) {
+  public synchronized Decider.Component<Actionable, SelfKnowledge, Push> _newComponent(final Decider.Requires<Actionable, SelfKnowledge, Push> b, final boolean start) {
     if (this.init) {
     	throw new RuntimeException("This instance of Decider has already been used to create a component, use another one.");
     }
     this.init = true;
-    Decider.ComponentImpl<Actionable, SelfKnowledge>  _comp = new Decider.ComponentImpl<Actionable, SelfKnowledge>(this, b, true);
+    Decider.ComponentImpl<Actionable, SelfKnowledge, Push>  _comp = new Decider.ComponentImpl<Actionable, SelfKnowledge, Push>(this, b, true);
     if (start) {
     	_comp.start();
     }

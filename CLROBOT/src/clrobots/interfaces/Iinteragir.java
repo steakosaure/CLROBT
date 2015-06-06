@@ -14,5 +14,7 @@ public interface Iinteragir {
 	public void doNothing();
 	public void suicide(Point cell);
 	public void exchange(String idRobot, Color robotColor, Cellule nouvelleBoite, Boite ancienneBoite, Cellule celluleRobot);
+	public void gotBox(String idRobot, Color robotColor, Point position, Color boxColor);
+	public void lostBox(String idRobot, Color robotColor, Point position);
 	//public void changeBox(String idRobot, Color color, Point oldPoint, Point newPoint, Boite oldBoite, Boite newBoite);
 }

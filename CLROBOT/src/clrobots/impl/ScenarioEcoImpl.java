@@ -1,29 +1,22 @@
 package clrobots.impl;
 
-import java.awt.Color;
-import java.awt.Point;
-import java.util.Map;
-
 import robot.impl.RobotForwardAssemblyEcoImpl;
-import clrobots.EcoRobotAgents;
 import clrobots.Environnement;
-import clrobots.Forward;
 import clrobots.GUI;
 import clrobots.Launcher;
 import clrobots.RobotForwardAssemblyEco;
 import clrobots.ScenarioEco;
-import clrobots.interfaces.CycleAlert;
-import clrobots.interfaces.ICreateRobot;
+import clrobots.interfaces.IPullMessage;
+import clrobots.interfaces.IPushMessage;
 import clrobots.interfaces.IRobotKnowledge;
 import clrobots.interfaces.Iinteragir;
-import environnement.Cellule;
 import environnement.impl.EnvironnementImpl;
 import environnement.interfaces.IEnvInfos;
 import environnement.interfaces.IEnvInit;
 import gui.impl.GUIImpl;
 import gui.interfaces.IUpdateUi;
 
-public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge, IUpdateUi> implements Runnable{
+public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit, IRobotKnowledge, IUpdateUi, IPushMessage, IPullMessage> implements Runnable{
 
 	GUIImpl gui;
 	@Override
@@ -43,7 +36,7 @@ public class ScenarioEcoImpl extends ScenarioEco<Iinteragir, IEnvInfos, IEnvInit
 	}
 
 	@Override
-	protected RobotForwardAssemblyEco<Iinteragir, IEnvInfos, IRobotKnowledge> make_rfAssemblyEco() {
+	protected RobotForwardAssemblyEco<Iinteragir, IEnvInfos, IRobotKnowledge, IPushMessage, IPullMessage> make_rfAssemblyEco() {
 		return new RobotForwardAssemblyEcoImpl();
 	}
 	
