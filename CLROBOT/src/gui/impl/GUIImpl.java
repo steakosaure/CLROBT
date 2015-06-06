@@ -196,7 +196,7 @@ public class GUIImpl extends GUI<IUpdateUi, IEnvInit> implements IUpdateUi, Runn
 
 	@Override
 	public void run() {
-		this.requires().initEnvironnement().randomInit(90, 30);
+		this.requires().initEnvironnement().randomInit(50, 40);
 	}
 
 

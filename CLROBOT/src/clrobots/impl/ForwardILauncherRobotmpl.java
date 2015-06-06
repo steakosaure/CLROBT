@@ -144,8 +144,6 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 
 				this.requestMessageBox.add(request);
 			}
-
-			System.out.println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBb");
 			
 		}
 
@@ -154,7 +152,6 @@ public class ForwardILauncherRobotmpl extends Forward<CycleAlert, IEnvInfos, Iin
 
 				this.responseMessageBox.add(response);
 			}
-			System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa");
 		}
 
 		@Override

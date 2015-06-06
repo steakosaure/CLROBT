@@ -204,21 +204,26 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 
 				if(waitingForResponse) {
 
-					System.out.println("-1");
 					if (gotResponse) {
 
 						System.out.println("0");
 						if (responseMessage.takeBox) {
-							System.out.println("1");
-							boite = null;
+							if(responseMessage.getBoxtoExchange() != null)
+								boite = new Boite(responseMessage.getBoxtoExchange());
+							else {
+								boite = null;
+							}
 							responseMessage = null;
 							gotResponse = false;
 							waitingForResponse = false;
-
-							System.out.println("555555555555555555555555555555555555555555555555555555555");
-							this.requires().action().lostBox(id, robotColor, coord.getCoordinates());
+							
+							if(boite == null) {
+								this.requires().action().lostBox(id, robotColor, coord.getCoordinates());
+							} else {
+								this.requires().action().gotBox(id, robotColor, coord.getCoordinates(), boite.getCouleur());
+							}
+							
 						} else {
-							System.out.println("2");
 							responseMessage = null;
 							gotResponse = false;
 							waitingForResponse = false;
@@ -230,18 +235,14 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 						this.requires().action().doNothing();
 					}
 				} else if (gotRequest) {
-
-					System.out.println("3");
-					if(adjacentCells.contains(requestMessage.senderPosition) && boite == null) {
-
-						System.out.println("4");
-						this.requires().sendMessage().sendResponseMessage(new MessageResponse(true,id, requestMessage.senderId));
+					if(adjacentCells.contains(requestMessage.senderPosition) && (boite == null || boite.getCouleur() != robotColor)) {
+						MessageResponse msg = new MessageResponse(true,id, requestMessage.senderId);
+						msg.setBoxtoExchange(boite);
+						this.requires().sendMessage().sendResponseMessage(msg);
 						boite = new Boite(robotColor);
-						System.out.println("###################################################");
 						this.requires().action().gotBox(id, robotColor, coord.getCoordinates(), robotColor);
+						
 					} else {
-
-						System.out.println("5");
 						this.requires().sendMessage().sendResponseMessage(new MessageResponse(false,id, requestMessage.senderId));
 						gotRequest = false;
 						requestMessage = null;
@@ -255,7 +256,6 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 
 					for (Cellule cell : adjacentCells){
 						if (cell.getStatus() == CellStatus.BOX){
-							System.out.println("Boite a ("+cell.getCoordinates().x+","+cell.getCoordinates().y+")");
 							containingBoxCells.add(cell);
 						} else if(cell.getStatus() == CellStatus.ROBOT) {
 							containingRobotsCells.add(cell);
@@ -347,22 +347,18 @@ public class EcoRobotImpl extends EcoRobotAgents<Iinteragir, IEnvInfos, IRobotKn
 									MessageRequest message = new MessageRequest(boite, id, chosenRobot.getRobotId(), coord);
 									exchange = true;
 									waitingForResponse = true;
-									System.out.println(id + "   &&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
 									this.requires().sendMessage().sendRequestMessage(message);
-
-									System.out.println(id+" 8888888888888888888888888");
 								}
 							}
 
 							if(!exchange) {
 								Point nestCoordinates = this.requires().knowledge().getNestCoord(boite.getCouleur());
-								System.out.println(nestCoordinates);
 								int nbFreeCells =  getFreeCellulesFrom(adjacentCells).size();
 
 								//SI JE SUIS BLOQUE J'ATTEND
 								if(nbFreeCells == 0) {
 
-									System.out.println(id+" porte une boite mais peu pas bouger ");
+									System.out.println(id+" porte une boite mais ne peut pas bouger ");
 									this.requires().action().doNothing();
 									//SINON J'AVANCE
 								} else {
